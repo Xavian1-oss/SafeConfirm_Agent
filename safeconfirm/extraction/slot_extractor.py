@@ -47,7 +47,7 @@ def extract_critical_slots(
 def _fallback_extraction(tool_name: str, tool_args: dict[str, Any]) -> SlotExtractionResultModel:
     critical_slots: list[CriticalSlotModel] = []
     for name, value in tool_args.items():
-        if not isinstance(value, (str, int, float, list, dict)):
+        if not isinstance(value, str | int | float | list | dict):
             continue
         critical_slots.append(
             CriticalSlotModel(
