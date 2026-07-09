@@ -7,7 +7,6 @@ from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
 from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.logging import Logger
 from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlock, text_content_block_from_string
-
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.intervention_executor import InterventionExecutor
 from safeconfirm.pipeline.orchestrator import (
@@ -53,9 +52,7 @@ class SafeConfirmIntervention(BasePipelineElement):
             return query, runtime, env, messages, extra_args
 
         state = get_or_init_safeconfirm_state(extra_args, self.config)
-        records = [
-            self.pipeline.analyze_tool_call(tool_call, query, list(messages)) for tool_call in tool_calls
-        ]
+        records = [self.pipeline.analyze_tool_call(tool_call, query, list(messages)) for tool_call in tool_calls]
 
         if self.config.mode == "log_only":
             state["intervention_log"].extend(records)

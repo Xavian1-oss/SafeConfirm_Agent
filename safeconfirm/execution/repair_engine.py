@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 from agentdojo.default_suites.v1.tools.email_client import EmailContact
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
-
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
 from safeconfirm.extraction.slot_extractor import get_tool_entry

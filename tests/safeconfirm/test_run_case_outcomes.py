@@ -1,16 +1,15 @@
 from pathlib import Path
 
+from agentdojo.functions_runtime import FunctionCall
+from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.evaluation.benchmark_cases import load_benchmark_cases
-from safeconfirm.evaluation.run_case import run_benchmark_case
-from safeconfirm.extraction.registry_loader import load_registry
-from safeconfirm.policy.retrieval_policy import RetrievalPolicy
-from safeconfirm.analysis.source_analyzer import analyze_sources
-from safeconfirm.extraction.slot_extractor import extract_critical_slots
-from safeconfirm.evaluation.run_case import _messages_from_case
-from safeconfirm.learning.experience_store import ExperienceStore
-from agentdojo.functions_runtime import FunctionCall
 from safeconfirm.evaluation.metrics import executed_with_untrusted_binding
+from safeconfirm.evaluation.run_case import _messages_from_case, run_benchmark_case
+from safeconfirm.extraction.registry_loader import load_registry
+from safeconfirm.extraction.slot_extractor import extract_critical_slots
+from safeconfirm.learning.experience_store import ExperienceStore
+from safeconfirm.policy.retrieval_policy import RetrievalPolicy
 from safeconfirm.types.models import InterventionType
 
 BENCHMARK_CASES_PATH = Path(__file__).resolve().parents[2] / "safeconfirm/data/benchmark_cases.yaml"

@@ -5,18 +5,17 @@ from typing import Any, cast
 
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
 from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, text_content_block_from_string
-
 from safeconfirm.config.loader import SafeConfirmConfig
-from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.confirmation import (
     build_confirmation_payload,
     is_confirmation_laundering,
     load_templates,
     validate_disclosure,
 )
+from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.repair_engine import RepairEngine
 from safeconfirm.pipeline.orchestrator import SafeConfirmPipeline
-from safeconfirm.types.models import ConfirmationResponseModel, InterventionRecordModel, InterventionType
+from safeconfirm.types.models import InterventionRecordModel, InterventionType
 
 
 @dataclass
@@ -51,7 +50,9 @@ class InterventionExecutor:
         pipeline: SafeConfirmPipeline,
     ) -> InterventionOutcome:
         if any(record.selected_intervention == InterventionType.BLOCK.value for record in records):
-            return self._block_all(messages, records, "SafeConfirm blocked one or more tool calls due to authorization risk.")
+            return self._block_all(
+                messages, records, "SafeConfirm blocked one or more tool calls due to authorization risk."
+            )
 
         if any(record.selected_intervention == InterventionType.REPLAN.value for record in records):
             return self._replan_all(messages, records)
@@ -148,9 +149,7 @@ class InterventionExecutor:
             )
 
         messages = list(messages)
-        messages.append(
-            ChatUserMessage(role="user", content=[text_content_block_from_string(payload.prompt_text)])
-        )
+        messages.append(ChatUserMessage(role="user", content=[text_content_block_from_string(payload.prompt_text)]))
 
         response = self.confirmer.respond(payload, primary, extra_args)
         laundering = is_confirmation_laundering(payload, response, primary)
@@ -178,7 +177,9 @@ class InterventionExecutor:
         for record in records:
             record.executed = False
             record.executed_binding = None
-        return self._block_all(messages, records, "SafeConfirm blocked the tool call after user rejection.", clear_prompt=False)
+        return self._block_all(
+            messages, records, "SafeConfirm blocked the tool call after user rejection.", clear_prompt=False
+        )
 
     def _block_all(
         self,

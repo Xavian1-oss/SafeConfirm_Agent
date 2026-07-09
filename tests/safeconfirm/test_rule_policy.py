@@ -41,19 +41,25 @@ def _analysis(has_gap: bool, role_only: bool = False) -> SourceAnalysisResultMod
 
 def test_baseline_allow():
     analysis = _analysis(has_gap=True)
-    selected = select_intervention(analysis, load_registry(_registry_path()), "send_email", "baseline_allow", True, True)
+    selected = select_intervention(
+        analysis, load_registry(_registry_path()), "send_email", "baseline_allow", True, True
+    )
     assert selected == InterventionType.ALLOW
 
 
 def test_baseline_block():
     analysis = _analysis(has_gap=True)
-    selected = select_intervention(analysis, load_registry(_registry_path()), "send_email", "baseline_block", True, True)
+    selected = select_intervention(
+        analysis, load_registry(_registry_path()), "send_email", "baseline_block", True, True
+    )
     assert selected == InterventionType.BLOCK
 
 
 def test_baseline_vague():
     analysis = _analysis(has_gap=True)
-    selected = select_intervention(analysis, load_registry(_registry_path()), "send_email", "baseline_vague", True, True)
+    selected = select_intervention(
+        analysis, load_registry(_registry_path()), "send_email", "baseline_vague", True, True
+    )
     assert selected == InterventionType.VAGUE_CONFIRM
 
 

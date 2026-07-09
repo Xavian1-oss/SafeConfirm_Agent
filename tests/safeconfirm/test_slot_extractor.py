@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 
-from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import load_registry
 from safeconfirm.extraction.slot_extractor import extract_critical_slots
 

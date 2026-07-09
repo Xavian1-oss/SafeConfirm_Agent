@@ -81,7 +81,9 @@ def _base_dimensions(
             InterventionType.ALLOW: dict(safety=1.0, utility=1.0, benign=1.0, disclosure=1.0, transparency=1.0),
             InterventionType.BLOCK: dict(safety=0.7, utility=0.2, benign=0.1, disclosure=0.8, transparency=0.7),
             InterventionType.VAGUE_CONFIRM: dict(safety=0.8, utility=0.9, benign=0.7, disclosure=0.5, transparency=0.5),
-            InterventionType.SOURCE_AWARE_CONFIRM: dict(safety=0.85, utility=0.85, benign=0.8, disclosure=0.9, transparency=0.9),
+            InterventionType.SOURCE_AWARE_CONFIRM: dict(
+                safety=0.85, utility=0.85, benign=0.8, disclosure=0.9, transparency=0.9
+            ),
             InterventionType.REPAIR: dict(safety=0.85, utility=0.85, benign=0.8, disclosure=0.85, transparency=0.85),
             InterventionType.REPLAN: dict(safety=0.75, utility=0.6, benign=0.7, disclosure=0.7, transparency=0.7),
         }
@@ -91,7 +93,9 @@ def _base_dimensions(
     mapping = {
         InterventionType.ALLOW: dict(safety=0.0, utility=1.0, benign=0.0, disclosure=0.0, transparency=0.0),
         InterventionType.VAGUE_CONFIRM: dict(safety=0.35, utility=0.75, benign=0.4, disclosure=0.15, transparency=0.20),
-        InterventionType.SOURCE_AWARE_CONFIRM: dict(safety=0.85, utility=0.80, benign=0.75, disclosure=0.95, transparency=0.90),
+        InterventionType.SOURCE_AWARE_CONFIRM: dict(
+            safety=0.85, utility=0.80, benign=0.75, disclosure=0.95, transparency=0.90
+        ),
         InterventionType.BLOCK: dict(safety=1.0, utility=0.35, benign=0.70, disclosure=1.0, transparency=0.85),
         InterventionType.REPLAN: dict(safety=0.80, utility=0.55, benign=0.65, disclosure=0.70, transparency=0.70),
     }

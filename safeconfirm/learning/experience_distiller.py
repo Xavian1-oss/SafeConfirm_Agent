@@ -3,16 +3,21 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from agentdojo.functions_runtime import FunctionCall
-from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
 
+from agentdojo.functions_runtime import FunctionCall
+from agentdojo.types import (
+    ChatAssistantMessage,
+    ChatMessage,
+    ChatToolResultMessage,
+    ChatUserMessage,
+    text_content_block_from_string,
+)
+from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
-from safeconfirm.extraction.slot_extractor import get_tool_entry
+from safeconfirm.extraction.slot_extractor import extract_critical_slots, get_tool_entry
 from safeconfirm.learning.experience_store import ExperienceStore
 from safeconfirm.learning.group_comparator import GroupComparator
-from safeconfirm.analysis.source_analyzer import analyze_sources
-from safeconfirm.extraction.slot_extractor import extract_critical_slots
 from safeconfirm.policy.candidate_generator import generate_candidates
 from safeconfirm.types.models import (
     ExperienceModel,
@@ -21,7 +26,11 @@ from safeconfirm.types.models import (
     SourceAnalysisResultModel,
     TrainingCaseModel,
 )
-from safeconfirm.verifier.intervention_verifier import InterventionVerifier, VerificationContext, dominant_untrusted_source
+from safeconfirm.verifier.intervention_verifier import (
+    InterventionVerifier,
+    VerificationContext,
+    dominant_untrusted_source,
+)
 
 
 class ExperienceDistiller:
@@ -107,9 +116,7 @@ def pattern_from_analysis(
 
 
 def _messages_from_case(case: TrainingCaseModel) -> list[ChatMessage]:
-    messages: list[ChatMessage] = [
-        ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])
-    ]
+    messages: list[ChatMessage] = [ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])]
     if case.observation_content:
         messages.append(
             ChatToolResultMessage(
@@ -142,9 +149,7 @@ def _build_rationale(case: TrainingCaseModel, winner: InterventionType, analysis
             "instead of using vague confirmation."
         )
     if winner == InterventionType.BLOCK:
-        return (
-            f"High-risk {case.tool_name} with authorization gap should fail closed when safety dominates utility."
-        )
+        return f"High-risk {case.tool_name} with authorization gap should fail closed when safety dominates utility."
     if winner == InterventionType.ALLOW:
         return "No authorization gap remained; allow the tool call."
     return f"Selected {winner.value} for case {case.id} based on group-relative verifier scores."

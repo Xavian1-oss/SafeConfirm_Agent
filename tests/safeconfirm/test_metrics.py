@@ -95,7 +95,9 @@ def test_executed_with_untrusted_binding_detects_poisoned_execution():
 def test_metrics_uar_fixture():
     runs = [
         _run("c1", False, _record(executed=True, source=SourceTrust.UNTRUSTED_OBSERVATION, selected="ALLOW")),
-        _run("c2", False, _record(executed=False, source=SourceTrust.UNTRUSTED_OBSERVATION, selected="BLOCK", binding={})),
+        _run(
+            "c2", False, _record(executed=False, source=SourceTrust.UNTRUSTED_OBSERVATION, selected="BLOCK", binding={})
+        ),
     ]
     metrics = compute_metrics(runs)
     assert metrics.uar == pytest.approx(0.5)

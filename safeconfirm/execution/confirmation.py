@@ -27,9 +27,7 @@ def load_templates(templates_path: Path) -> dict[str, str]:
 
 def required_disclosures_for_record(record: InterventionRecordModel) -> list[str]:
     return [
-        r.slot.name
-        for r in record.slot_records
-        if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD
+        r.slot.name for r in record.slot_records if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD
     ]
 
 
@@ -124,9 +122,7 @@ def is_confirmation_laundering(
 ) -> bool:
     if response.outcome != "approved":
         return False
-    gap_slots = [
-        r for r in record.slot_records if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD
-    ]
+    gap_slots = [r for r in record.slot_records if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD]
     if not gap_slots:
         return False
     if payload.intervention == "VAGUE_CONFIRM":

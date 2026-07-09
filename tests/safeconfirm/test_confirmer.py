@@ -1,6 +1,6 @@
 from safeconfirm.config.loader import SafeConfirmConfig
-from safeconfirm.execution.confirmer import OracleConfirmer
 from safeconfirm.execution.confirmation import build_confirmation_payload, load_templates
+from safeconfirm.execution.confirmer import OracleConfirmer
 from safeconfirm.types.models import (
     CriticalSlotModel,
     InterventionRecordModel,

@@ -1,3 +1,4 @@
+from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmation import (
     build_confirmation_payload,
     is_confirmation_laundering,
@@ -12,7 +13,6 @@ from safeconfirm.types.models import (
     SlotSourceRecordModel,
     SourceTrust,
 )
-from safeconfirm.config.loader import SafeConfirmConfig
 
 
 def _record_with_gap() -> InterventionRecordModel:

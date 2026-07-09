@@ -6,7 +6,11 @@ from safeconfirm.extraction.registry_loader import ToolSlotRegistry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
 from safeconfirm.learning.experience_store import ExperienceStore
 from safeconfirm.policy.rule_policy import rule_v1_select
-from safeconfirm.types.models import ExperienceModel, ExperiencePatternModel, InterventionType, SourceAnalysisResultModel
+from safeconfirm.types.models import (
+    ExperiencePatternModel,
+    InterventionType,
+    SourceAnalysisResultModel,
+)
 from safeconfirm.verifier.intervention_verifier import dominant_untrusted_source
 
 
@@ -36,7 +40,9 @@ class RetrievalPolicy:
             key=lambda experience: _pattern_similarity(pattern, experience.pattern),
             reverse=True,
         )
-        top_matches = [experience for experience in ranked[: self.top_k] if _pattern_similarity(pattern, experience.pattern) > 0]
+        top_matches = [
+            experience for experience in ranked[: self.top_k] if _pattern_similarity(pattern, experience.pattern) > 0
+        ]
         if not top_matches:
             return rule_v1_select(analysis, registry, tool_name, enable_repair, never_allow_on_untrusted)
 

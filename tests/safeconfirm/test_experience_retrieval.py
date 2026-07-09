@@ -4,7 +4,7 @@ import pytest
 
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import load_registry
-from safeconfirm.learning.experience_distiller import ExperienceDistiller, distill_to_store
+from safeconfirm.learning.experience_distiller import distill_to_store
 from safeconfirm.learning.experience_store import ExperienceStore
 from safeconfirm.learning.group_comparator import GroupComparator
 from safeconfirm.policy.retrieval_policy import RetrievalPolicy

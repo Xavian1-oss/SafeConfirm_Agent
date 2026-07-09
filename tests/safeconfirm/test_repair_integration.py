@@ -5,7 +5,6 @@ from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox, search_contacts_by_name
 from agentdojo.functions_runtime import FunctionCall, FunctionsRuntime, TaskEnvironment
 from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
-
 from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 from safeconfirm.types.models import SourceTrust
 from tests.safeconfirm.message_helpers import as_assistant
@@ -66,9 +65,7 @@ def test_role_binding_repair_rebinds_to_trusted_contact():
     element = SafeConfirmIntervention(mode="active", policy_backend="rule_v1")
     query, messages = _role_binding_messages()
     extra_args: dict = {}
-    _, _, _, out_messages, out_extra = element.query(
-        query, _runtime(), _workspace_env(), messages, extra_args
-    )
+    _, _, _, out_messages, out_extra = element.query(query, _runtime(), _workspace_env(), messages, extra_args)
 
     record = out_extra["safeconfirm"]["intervention_log"][0]
     assert record.selected_intervention == "ALLOW"

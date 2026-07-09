@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Compare L0 utility between baseline (P0) and SafeConfirm log_only runs."""
+
 from __future__ import annotations
 
 import argparse
@@ -42,17 +43,11 @@ def main() -> None:
     print(f"Absolute delta:          {delta * 100:.2f} pp")
     print(f"L0 pass (≤ {args.tolerance * 100:.0f}%): {'YES' if delta <= args.tolerance else 'NO'}")
 
-    mismatches = [
-        task
-        for task in shared_tasks
-        if baseline[task] != candidate[task]
-    ]
+    mismatches = [task for task in shared_tasks if baseline[task] != candidate[task]]
     if mismatches:
         print("\nPer-task mismatches:")
         for task in mismatches:
-            print(
-                f"  {task}: baseline={baseline[task]} candidate={candidate[task]}"
-            )
+            print(f"  {task}: baseline={baseline[task]} candidate={candidate[task]}")
 
 
 if __name__ == "__main__":

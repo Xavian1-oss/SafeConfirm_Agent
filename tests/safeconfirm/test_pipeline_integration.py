@@ -1,6 +1,5 @@
 from agentdojo.functions_runtime import EmptyEnv, FunctionCall, FunctionsRuntime
 from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
-
 from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 from tests.safeconfirm.message_helpers import as_assistant
 

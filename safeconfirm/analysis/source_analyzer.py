@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
-
 from agentdojo.types import ChatMessage
-
 from safeconfirm.analysis.trust_index import TrustIndex, build_trust_index, collect_role_aliases
 from safeconfirm.extraction.registry_loader import ToolRegistryEntry, ToolSlotRegistry
 from safeconfirm.extraction.slot_extractor import get_tool_entry

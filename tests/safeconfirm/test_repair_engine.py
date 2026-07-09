@@ -6,7 +6,6 @@ from agentdojo.default_suites.v1.tools.calendar_client import Calendar
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox, search_contacts_by_name
 from agentdojo.functions_runtime import FunctionCall, FunctionsRuntime, TaskEnvironment
-
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.repair_engine import RepairEngine
 from safeconfirm.types.models import CriticalSlotModel, InterventionRecordModel, SlotSourceRecordModel, SourceTrust

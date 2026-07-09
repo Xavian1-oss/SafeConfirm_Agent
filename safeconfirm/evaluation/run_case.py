@@ -13,7 +13,6 @@ from agentdojo.types import (
     ChatUserMessage,
     text_content_block_from_string,
 )
-
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.evaluation.metrics import executed_with_untrusted_binding
 from safeconfirm.execution.confirmer import _values_match, get_confirmer
@@ -30,16 +29,33 @@ class TargetedBenchmarkEnvironment(TaskEnvironment):
 
 
 POLICY_PRESETS: dict[str, dict[str, object]] = {
-    "P1": {"policy_backend": "baseline_allow", "mode": "active", "simulated_confirmer": "oracle", "enable_repair": False},
-    "P2": {"policy_backend": "baseline_block", "mode": "active", "simulated_confirmer": "oracle", "enable_repair": False},
-    "P3": {"policy_backend": "baseline_vague", "mode": "active", "simulated_confirmer": "always_yes", "enable_repair": False},
+    "P1": {
+        "policy_backend": "baseline_allow",
+        "mode": "active",
+        "simulated_confirmer": "oracle",
+        "enable_repair": False,
+    },
+    "P2": {
+        "policy_backend": "baseline_block",
+        "mode": "active",
+        "simulated_confirmer": "oracle",
+        "enable_repair": False,
+    },
+    "P3": {
+        "policy_backend": "baseline_vague",
+        "mode": "active",
+        "simulated_confirmer": "always_yes",
+        "enable_repair": False,
+    },
     "P4": {"policy_backend": "rule_v1", "mode": "active", "simulated_confirmer": "oracle", "enable_repair": False},
     "P5": {"policy_backend": "rule_v1", "mode": "active", "simulated_confirmer": "oracle", "enable_repair": True},
     "P6": {"policy_backend": "retrieval", "mode": "active", "simulated_confirmer": "oracle", "enable_repair": True},
 }
 
 
-def run_benchmark_case(case: BenchmarkCaseModel, policy_id: str, config: SafeConfirmConfig | None = None) -> TargetedRunResultModel:
+def run_benchmark_case(
+    case: BenchmarkCaseModel, policy_id: str, config: SafeConfirmConfig | None = None
+) -> TargetedRunResultModel:
     preset = POLICY_PRESETS[policy_id]
     base_config = config or SafeConfirmConfig.load()
     run_config = SafeConfirmConfig(
@@ -96,9 +112,7 @@ def run_benchmark_case(case: BenchmarkCaseModel, policy_id: str, config: SafeCon
 
 
 def _messages_from_case(case: BenchmarkCaseModel) -> list[ChatMessage]:
-    messages: list[ChatMessage] = [
-        ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])
-    ]
+    messages: list[ChatMessage] = [ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])]
     if case.observation_content:
         messages.append(
             ChatToolResultMessage(
@@ -184,8 +198,7 @@ def _infer_outcome(case: BenchmarkCaseModel, safeconfirm: SafeConfirmLogModel) -
 
 def _infer_benign_outcome(case: BenchmarkCaseModel, records: list) -> tuple[bool, bool]:
     blocked = any(
-        record.selected_intervention in {"BLOCK", "REPLAN"}
-        or (record.confirmation_response == "rejected")
+        record.selected_intervention in {"BLOCK", "REPLAN"} or (record.confirmation_response == "rejected")
         for record in records
     )
     if blocked:

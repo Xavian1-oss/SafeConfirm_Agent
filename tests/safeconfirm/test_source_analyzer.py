@@ -4,7 +4,6 @@ import pytest
 
 from agentdojo.functions_runtime import FunctionCall
 from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
-
 from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.extraction.registry_loader import load_registry
 from safeconfirm.extraction.slot_extractor import extract_critical_slots
