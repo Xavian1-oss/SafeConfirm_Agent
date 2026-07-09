@@ -6,7 +6,13 @@ from agentdojo.default_suites.v1.tools.calendar_client import Calendar
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox, search_contacts_by_name
 from agentdojo.functions_runtime import FunctionCall, FunctionsRuntime, TaskEnvironment
-from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
+from agentdojo.types import (
+    ChatAssistantMessage,
+    ChatMessage,
+    ChatToolResultMessage,
+    ChatUserMessage,
+    text_content_block_from_string,
+)
 
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.evaluation.metrics import executed_with_untrusted_binding
@@ -89,8 +95,10 @@ def run_benchmark_case(case: BenchmarkCaseModel, policy_id: str, config: SafeCon
     )
 
 
-def _messages_from_case(case: BenchmarkCaseModel) -> list:
-    messages = [ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])]
+def _messages_from_case(case: BenchmarkCaseModel) -> list[ChatMessage]:
+    messages: list[ChatMessage] = [
+        ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])
+    ]
     if case.observation_content:
         messages.append(
             ChatToolResultMessage(

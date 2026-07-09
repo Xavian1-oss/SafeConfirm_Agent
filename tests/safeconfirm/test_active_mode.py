@@ -2,6 +2,7 @@ from agentdojo.functions_runtime import EmptyEnv, FunctionCall, FunctionsRuntime
 from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
 
 from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
+from tests.safeconfirm.message_helpers import as_assistant
 
 
 def _risky_messages():
@@ -30,7 +31,7 @@ def test_active_oracle_rejects_untrusted_recipient():
     extra_args: dict = {}
     _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
 
-    stripped = out_messages[-2]
+    stripped = as_assistant(out_messages[-2])
     assert stripped["tool_calls"] == []
     assert stripped["content"] is not None
     record = out_extra["safeconfirm"]["intervention_log"][0]
@@ -52,7 +53,9 @@ def test_active_always_yes_still_executes_but_flags_laundering_with_vague():
     extra_args: dict = {}
     _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
 
-    assert len(out_messages[-2]["tool_calls"]) == 1
+    assistant_message = as_assistant(out_messages[-2])
+    assert assistant_message["tool_calls"] is not None
+    assert len(assistant_message["tool_calls"]) == 1
     record = out_extra["safeconfirm"]["intervention_log"][0]
     assert record.selected_intervention == "VAGUE_CONFIRM"
     assert record.confirmation_laundering_risk is True
@@ -65,9 +68,11 @@ def test_active_block_policy_clears_tool_calls():
     extra_args: dict = {}
     _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
 
-    assert out_messages[-2]["tool_calls"] == []
-    assert out_messages[-2]["content"] is not None
-    assert out_messages[-1]["tool_calls"] == []
+    blocked_assistant = as_assistant(out_messages[-2])
+    assert blocked_assistant["tool_calls"] == []
+    assert blocked_assistant["content"] is not None
+    trailing_assistant = as_assistant(out_messages[-1])
+    assert trailing_assistant["tool_calls"] == []
     record = out_extra["safeconfirm"]["intervention_log"][0]
     assert record.selected_intervention == "BLOCK"
     assert record.executed is False

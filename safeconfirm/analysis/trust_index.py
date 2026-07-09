@@ -27,13 +27,19 @@ def build_trust_index(messages: list[ChatMessage] | tuple[ChatMessage, ...], rol
     for idx, message in enumerate(messages):
         role = message["role"]
         if role == "user":
-            text = get_text_content_as_str(message["content"]).lower()
+            content = message["content"]
+            if content is None:
+                continue
+            text = get_text_content_as_str(content).lower()
             user_parts.append(text)
             for alias in role_aliases:
                 if alias.lower() in text:
                     user_roles.add(alias.lower())
         elif role == "tool":
-            text = get_text_content_as_str(message["content"])
+            content = message["content"]
+            if content is None:
+                continue
+            text = get_text_content_as_str(content)
             tool_name = None
             if "tool_call" in message and message["tool_call"] is not None:
                 tool_name = message["tool_call"].function

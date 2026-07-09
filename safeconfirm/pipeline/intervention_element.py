@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
 from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.logging import Logger
-from agentdojo.types import ChatAssistantMessage, ChatMessage, text_content_block_from_string
+from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlock, text_content_block_from_string
 
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.intervention_executor import InterventionExecutor
@@ -53,7 +54,7 @@ class SafeConfirmIntervention(BasePipelineElement):
 
         state = get_or_init_safeconfirm_state(extra_args, self.config)
         records = [
-            self.pipeline.analyze_tool_call(tool_call, query, messages) for tool_call in tool_calls
+            self.pipeline.analyze_tool_call(tool_call, query, list(messages)) for tool_call in tool_calls
         ]
 
         if self.config.mode == "log_only":
@@ -82,7 +83,7 @@ class SafeConfirmIntervention(BasePipelineElement):
             content = [text_content_block_from_string("")]
         updated_messages[original_assistant_index] = ChatAssistantMessage(
             role="assistant",
-            content=content,
+            content=cast(list[MessageContentBlock] | None, content),
             tool_calls=tool_calls,
         )
 
@@ -93,5 +94,4 @@ class SafeConfirmIntervention(BasePipelineElement):
         state = extra_args.get("safeconfirm", {})
         payload = build_log_payload(state)
         logger = Logger.get()
-        if hasattr(logger, "set_contextarg"):
-            logger.set_contextarg("safeconfirm", payload.model_dump(mode="json"))
+        logger.set_contextarg("safeconfirm", payload.model_dump(mode="json"))

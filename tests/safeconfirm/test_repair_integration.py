@@ -8,6 +8,7 @@ from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUse
 
 from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 from safeconfirm.types.models import SourceTrust
+from tests.safeconfirm.message_helpers import as_assistant
 
 
 class RepairTestEnvironment(TaskEnvironment):
@@ -74,7 +75,9 @@ def test_role_binding_repair_rebinds_to_trusted_contact():
     assert record.repair_attempted is True
     assert record.repair_result == "success"
     assert record.executed is True
-    assert out_messages[-1]["tool_calls"][0].args["recipients"] == ["supervisor@university.edu"]
+    tool_calls = as_assistant(out_messages[-1])["tool_calls"]
+    assert tool_calls is not None
+    assert tool_calls[0].args["recipients"] == ["supervisor@university.edu"]
 
     recipient_record = next(r for r in record.slot_records if r.slot.name == "recipients")
     assert recipient_record.source == SourceTrust.TRUSTED_CONTACT
@@ -95,4 +98,4 @@ def test_repair_failure_falls_back_to_source_aware_confirm():
     assert record.selected_intervention == "SOURCE_AWARE_CONFIRM"
     assert record.confirmation_response == "rejected"
     assert record.executed is False
-    assert out_messages[-2]["tool_calls"] == []
+    assert as_assistant(out_messages[-2])["tool_calls"] == []

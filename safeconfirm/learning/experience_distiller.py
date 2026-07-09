@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 from agentdojo.functions_runtime import FunctionCall
-from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
+from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
 
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
@@ -72,7 +72,7 @@ class ExperienceDistiller:
     def distill_all(self, cases: list[TrainingCaseModel]) -> list[ExperienceModel]:
         return [self.distill_from_case(case) for case in cases]
 
-    def _analyze(self, query: str, messages: list, tool_call: FunctionCall) -> SourceAnalysisResultModel:
+    def _analyze(self, query: str, messages: list[ChatMessage], tool_call: FunctionCall) -> SourceAnalysisResultModel:
         extraction = extract_critical_slots(tool_call.function, dict(tool_call.args), self.registry)
         return analyze_sources(
             query,
@@ -106,8 +106,10 @@ def pattern_from_analysis(
     )
 
 
-def _messages_from_case(case: TrainingCaseModel) -> list:
-    messages = [ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])]
+def _messages_from_case(case: TrainingCaseModel) -> list[ChatMessage]:
+    messages: list[ChatMessage] = [
+        ChatUserMessage(role="user", content=[text_content_block_from_string(case.query)])
+    ]
     if case.observation_content:
         messages.append(
             ChatToolResultMessage(

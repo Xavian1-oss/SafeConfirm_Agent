@@ -32,6 +32,9 @@ class Logger:
             return NullLogger()
         return loggers[-1]
 
+    def set_contextarg(self, key, value):
+        pass
+
 
 class NullLogger(Logger):
     messages: list[ChatMessage]

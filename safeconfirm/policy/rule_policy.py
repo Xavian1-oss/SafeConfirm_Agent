@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
 from safeconfirm.types.models import InterventionType, SourceAnalysisResultModel
+
+if TYPE_CHECKING:
+    from safeconfirm.policy.retrieval_policy import RetrievalPolicy
 
 
 def select_intervention(
@@ -12,7 +17,7 @@ def select_intervention(
     policy_backend: str,
     enable_repair: bool,
     never_allow_on_untrusted: bool,
-    retrieval_policy: object | None = None,
+    retrieval_policy: RetrievalPolicy | None = None,
 ) -> InterventionType:
     if policy_backend == "baseline_allow":
         return InterventionType.ALLOW

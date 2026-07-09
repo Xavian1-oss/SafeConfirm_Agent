@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any, cast
 
-from agentdojo.functions_runtime import Env, FunctionCall, FunctionsRuntime
+from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
 from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, text_content_block_from_string
 
 from safeconfirm.config.loader import SafeConfirmConfig
@@ -42,7 +43,7 @@ class InterventionExecutor:
         self,
         query: str,
         runtime: FunctionsRuntime,
-        env: Env,
+        env: TaskEnvironment,
         messages: list[ChatMessage],
         tool_calls: list[FunctionCall],
         records: list[InterventionRecordModel],
@@ -67,7 +68,7 @@ class InterventionExecutor:
         self,
         query: str,
         runtime: FunctionsRuntime,
-        env: Env,
+        env: TaskEnvironment,
         messages: list[ChatMessage],
         tool_calls: list[FunctionCall],
         records: list[InterventionRecordModel],
@@ -225,14 +226,14 @@ def _copy_reanalysis(record: InterventionRecordModel, reanalysis: InterventionRe
 
 def _apply_corrected_slots(
     tool_calls: list[FunctionCall],
-    corrected_slots: dict[str, object],
+    corrected_slots: dict[str, Any],
 ) -> list[FunctionCall]:
     updated: list[FunctionCall] = []
     for tool_call in tool_calls:
         new_args = dict(tool_call.args)
         for slot_name, value in corrected_slots.items():
             if slot_name in new_args:
-                new_args[slot_name] = value
+                new_args[slot_name] = cast(FunctionCallArgTypes, value)
         updated.append(
             FunctionCall(
                 function=tool_call.function,

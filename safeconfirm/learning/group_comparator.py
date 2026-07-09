@@ -19,7 +19,7 @@ class GroupComparator:
         pool = eligible or scores
         mean_score = sum(score.total for score in pool.values()) / len(pool)
         deltas = {intervention.value: score.total - mean_score for intervention, score in pool.items()}
-        winner_value = max(deltas, key=deltas.get)
+        winner_value = max(deltas, key=lambda key: deltas[key])
         winner = InterventionType(winner_value)
         serialized_scores = {intervention.value: score for intervention, score in scores.items()}
         return ComparisonResult(

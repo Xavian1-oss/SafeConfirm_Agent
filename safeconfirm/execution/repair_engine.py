@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agentdojo.functions_runtime import Env, FunctionCall, FunctionsRuntime
+from agentdojo.default_suites.v1.tools.email_client import EmailContact
+from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
 
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
@@ -28,7 +29,7 @@ class RepairEngine:
         tool_call: FunctionCall,
         record: InterventionRecordModel,
         runtime: FunctionsRuntime,
-        env: Env,
+        env: TaskEnvironment,
     ) -> RepairOutcome:
         entry = get_tool_entry(self.registry, tool_call.function)
         if entry is None or entry.repair is None:
@@ -44,7 +45,7 @@ class RepairEngine:
         tool_call: FunctionCall,
         record: InterventionRecordModel,
         runtime: FunctionsRuntime,
-        env: Env,
+        env: TaskEnvironment,
         repair_cfg: dict,
     ) -> RepairOutcome:
         role_slot = repair_cfg.get("role_slot")
@@ -60,10 +61,12 @@ class RepairEngine:
             return RepairOutcome(success=False, reason="lookup_tool_unavailable")
 
         contacts, error = runtime.run_function(env, lookup_tool, {"query": role_label})
-        if error or not contacts:
+        if error or not isinstance(contacts, list) or not contacts:
             return RepairOutcome(success=False, reason=error or "contact_not_found")
 
         contact = contacts[0]
+        if not isinstance(contact, EmailContact):
+            return RepairOutcome(success=False, reason="contact_not_found")
         trusted_email = str(contact.email).lower()
         new_args = dict(tool_call.args)
         new_args[role_slot] = _format_slot_value(new_args.get(role_slot), trusted_email)
@@ -92,7 +95,7 @@ def _role_label_for_slot(record: InterventionRecordModel, role_slot: str) -> str
     return None
 
 
-def _format_slot_value(current_value: object, trusted_email: str) -> object:
+def _format_slot_value(current_value: object, trusted_email: str) -> FunctionCallArgTypes:
     if isinstance(current_value, list):
         return [trusted_email]
     return trusted_email
