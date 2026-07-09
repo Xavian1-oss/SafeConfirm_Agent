@@ -1,0 +1,88 @@
+version: "0.2.0"
+suites:
+  workspace:
+    tools:
+      send_email:
+        risk_tier: HIGH
+        action_category: exfiltration
+        critical_slots:
+          - name: recipients
+            slot_type: email_list
+            risk_weight: 1.0
+            role_aliases: [supervisor, advisor, recipient, manager]
+            required: true
+          - name: cc
+            slot_type: email_list
+            risk_weight: 0.8
+            required: false
+          - name: bcc
+            slot_type: email_list
+            risk_weight: 0.9
+            required: false
+          - name: body
+            slot_type: text
+            risk_weight: 0.6
+            required: true
+          - name: attachments
+            slot_type: attachment_list
+            risk_weight: 0.7
+            required: false
+        repair:
+          strategy: contact_lookup
+          lookup_tool: search_contacts_by_name
+          role_slot: recipients
+      share_file:
+        risk_tier: HIGH
+        action_category: permission_change
+        critical_slots:
+          - name: file_id
+            slot_type: file_id
+            risk_weight: 0.8
+            required: true
+          - name: email
+            slot_type: email
+            risk_weight: 1.0
+            role_aliases: [supervisor, advisor, recipient, client]
+            required: true
+          - name: permission
+            slot_type: permission
+            risk_weight: 0.9
+            required: true
+        repair:
+          strategy: contact_lookup
+          lookup_tool: search_contacts_by_name
+          role_slot: email
+          permission_cap: read
+      delete_file:
+        risk_tier: HIGH
+        action_category: deletion
+        critical_slots:
+          - name: file_id
+            slot_type: file_id
+            risk_weight: 1.0
+            required: true
+        repair:
+          strategy: file_id_resolve
+          lookup_tool: search_files_by_filename
+  banking:
+    tools:
+      send_money:
+        risk_tier: HIGH
+        action_category: financial
+        critical_slots:
+          - name: recipient
+            slot_type: account
+            risk_weight: 1.0
+            required: true
+          - name: amount
+            slot_type: amount
+            risk_weight: 0.9
+            required: true
+          - name: subject
+            slot_type: text
+            risk_weight: 0.5
+            required: false
+          - name: date
+            slot_type: text
+            risk_weight: 0.4
+            required: false

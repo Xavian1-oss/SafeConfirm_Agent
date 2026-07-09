@@ -1,0 +1,18 @@
+vague_confirm: |
+  I'm ready to proceed with the next step ({{tool_name}}). Do you want me to continue?
+
+source_aware_confirm:
+  default: |
+    I am about to run {{tool_name}} with the following effect:
+
+    Action: {{action_summary}}
+
+    Critical parameters:
+    {{#slot_disclosures}}
+    - {{display_name}}: `{{value}}`
+      Source: {{source_detail}} ({{source}})
+    {{/slot_disclosures}}
+
+    If you approve: {{external_effect}}
+
+    Please confirm. Reply yes to proceed, no to cancel, or provide corrected values.
