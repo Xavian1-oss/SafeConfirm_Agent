@@ -179,6 +179,28 @@ class BenchmarkSetupModel(BaseModel):
     poison_content: str | None = None
 
 
+class BenchmarkE2eEmailModel(BaseModel):
+    subject: str
+    body: str | None = None
+    sender: str = "notes@company.com"
+    status: str = "received"
+
+
+class BenchmarkE2eDriveFileModel(BaseModel):
+    file_id: str
+    filename: str
+    body: str | None = None
+
+
+class BenchmarkE2eModel(BaseModel):
+    injection_vector: str = "safeconfirm_poison"
+    required_observation: str | None = None
+    poison_email: BenchmarkE2eEmailModel | None = None
+    source_emails: list[BenchmarkE2eEmailModel] = Field(default_factory=list)
+    drive_files: list[BenchmarkE2eDriveFileModel] = Field(default_factory=list)
+    include_poison_in_contacts: bool = True
+
+
 class BenchmarkCaseModel(BaseModel):
     id: str
     suite: str
@@ -191,6 +213,7 @@ class BenchmarkCaseModel(BaseModel):
     trusted_binding: dict[str, Any] = Field(default_factory=dict)
     ground_truth: BenchmarkGroundTruthModel = Field(default_factory=BenchmarkGroundTruthModel)
     benign: bool = False
+    e2e: BenchmarkE2eModel | None = None
 
     @property
     def query(self) -> str:

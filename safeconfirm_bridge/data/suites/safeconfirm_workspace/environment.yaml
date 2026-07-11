@@ -1,0 +1,11 @@
+inbox:
+  account_email: agent.user@company.com
+  initial_emails: []
+  contact_list: []
+calendar:
+  current_day: 2024-05-14
+  account_email: agent.user@company.com
+  initial_events: []
+cloud_drive:
+  account_email: agent.user@company.com
+  initial_files: []

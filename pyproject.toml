@@ -91,7 +91,7 @@ managed = true
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agentdojo", "safeconfirm"]
+packages = ["src/agentdojo", "safeconfirm", "safeconfirm_bridge"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

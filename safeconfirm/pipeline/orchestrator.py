@@ -7,12 +7,12 @@ from agentdojo.types import ChatMessage
 from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
-from safeconfirm.extraction.slot_extractor import extract_critical_slots
+from safeconfirm.extraction.slot_extractor import extract_critical_slots, get_tool_entry
 from safeconfirm.learning.experience_store import ExperienceStore
 from safeconfirm.policy.candidate_generator import generate_candidates
 from safeconfirm.policy.retrieval_policy import RetrievalPolicy
 from safeconfirm.policy.rule_policy import select_intervention
-from safeconfirm.types.models import InterventionRecordModel, SafeConfirmLogModel
+from safeconfirm.types.models import InterventionRecordModel, InterventionType, SafeConfirmLogModel
 
 
 class SafeConfirmPipeline:
@@ -31,6 +31,23 @@ class SafeConfirmPipeline:
         messages: list[ChatMessage] | tuple[ChatMessage, ...],
         trusted_contact_emails: set[str] | None = None,
     ) -> InterventionRecordModel:
+        if get_tool_entry(self.registry, tool_call.function) is None:
+            return InterventionRecordModel(
+                tool_call_id=tool_call.id,
+                tool_name=tool_call.function,
+                tool_args=dict(tool_call.args),
+                critical_slots=[],
+                slot_records=[],
+                has_untrusted_binding=False,
+                has_role_only_binding=False,
+                overall_risk=0.0,
+                candidates_considered=[InterventionType.ALLOW.value],
+                selected_intervention=InterventionType.ALLOW.value,
+                policy_backend=self.config.policy_backend,
+                executed=True,
+                executed_binding=dict(tool_call.args),
+            )
+
         extraction = extract_critical_slots(tool_call.function, dict(tool_call.args), self.registry)
         analysis = analyze_sources(
             query,
