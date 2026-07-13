@@ -21,6 +21,7 @@ suites:
             required: false
           - name: body
             slot_type: text
+            slot_class: content
             risk_weight: 0.6
             required: true
           - name: attachments

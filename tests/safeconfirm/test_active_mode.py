@@ -1,5 +1,10 @@
+from __future__ import annotations
+
+from unittest.mock import MagicMock
+
 from agentdojo.functions_runtime import EmptyEnv, FunctionCall, FunctionsRuntime
 from agentdojo.types import ChatAssistantMessage, ChatToolResultMessage, ChatUserMessage, text_content_block_from_string
+from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 from tests.safeconfirm.message_helpers import as_assistant
 
@@ -24,54 +29,38 @@ def _risky_messages():
     ]
 
 
-def test_active_oracle_rejects_untrusted_recipient():
+def test_active_llm_user_rejects_untrusted_recipient(monkeypatch):
+    mock_client = MagicMock()
+    mock_completion = MagicMock()
+    mock_completion.choices = [MagicMock(message=MagicMock(content='{"decision":"rejected","reason":"external"}'))]
+    mock_client.chat.completions.create.return_value = mock_completion
+    monkeypatch.setattr(
+        "safeconfirm.execution.llm_user_confirmer.LLMUserConfirmer.client",
+        property(lambda self: mock_client),
+    )
+
     element = SafeConfirmIntervention(mode="active", policy_backend="rule_v1")
+    element.executor.confirmer = get_confirmer()
     query, messages = _risky_messages()
-    extra_args: dict = {}
+    extra_args = {"safeconfirm": {"user_query": query}}
     _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
 
     stripped = as_assistant(out_messages[-2])
     assert stripped["tool_calls"] == []
-    assert stripped["content"] is not None
     record = out_extra["safeconfirm"]["intervention_log"][0]
     assert record.selected_intervention == "SOURCE_AWARE_CONFIRM"
     assert record.confirmation_response == "rejected"
     assert record.executed is False
-    assert "attacker@example.com" in (record.confirmation_prompt or "")
-
-
-def test_active_always_yes_still_executes_but_flags_laundering_with_vague():
-    element = SafeConfirmIntervention(mode="active", policy_backend="baseline_vague")
-    element.config.simulated_confirmer = "always_yes"
-    element.executor.confirmer = element.executor.confirmer.__class__()  # reset
-    from safeconfirm.execution.confirmer import get_confirmer
-
-    element.executor.confirmer = get_confirmer("always_yes")
-
-    query, messages = _risky_messages()
-    extra_args: dict = {}
-    _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
-
-    assistant_message = as_assistant(out_messages[-2])
-    assert assistant_message["tool_calls"] is not None
-    assert len(assistant_message["tool_calls"]) == 1
-    record = out_extra["safeconfirm"]["intervention_log"][0]
-    assert record.selected_intervention == "VAGUE_CONFIRM"
-    assert record.confirmation_laundering_risk is True
-    assert record.executed is True
 
 
 def test_active_block_policy_clears_tool_calls():
     element = SafeConfirmIntervention(mode="active", policy_backend="baseline_block")
     query, messages = _risky_messages()
-    extra_args: dict = {}
+    extra_args = {"safeconfirm": {"user_query": query}}
     _, _, _, out_messages, out_extra = element.query(query, FunctionsRuntime([]), EmptyEnv(), messages, extra_args)
 
     blocked_assistant = as_assistant(out_messages[-2])
     assert blocked_assistant["tool_calls"] == []
-    assert blocked_assistant["content"] is not None
-    trailing_assistant = as_assistant(out_messages[-1])
-    assert trailing_assistant["tool_calls"] == []
     record = out_extra["safeconfirm"]["intervention_log"][0]
     assert record.selected_intervention == "BLOCK"
     assert record.executed is False

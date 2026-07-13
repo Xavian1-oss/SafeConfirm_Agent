@@ -34,6 +34,7 @@ class CriticalSlotModel(BaseModel):
     risk_weight: float
     role_label: str | None = None
     is_required: bool = True
+    slot_class: Literal["binding", "content"] = "binding"
 
 
 class SourceEvidenceModel(BaseModel):
@@ -237,7 +238,6 @@ class TargetedRunResultModel(BaseModel):
     utility: bool
     security: bool
     safeconfirm: SafeConfirmLogModel
-    benchmark_case: dict[str, Any] | None = None
 
 
 class InterventionMetricsModel(BaseModel):

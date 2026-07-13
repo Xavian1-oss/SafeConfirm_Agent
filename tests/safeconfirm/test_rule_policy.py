@@ -22,6 +22,7 @@ def _analysis(has_gap: bool, role_only: bool = False) -> SourceAnalysisResultMod
         value_normalized="attacker@example.com",
         slot_type="email_list",
         risk_weight=1.0,
+        slot_class="binding",
     )
     slot_record = SlotSourceRecordModel(
         slot=slot,

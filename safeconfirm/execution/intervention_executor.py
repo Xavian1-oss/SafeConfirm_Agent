@@ -6,6 +6,7 @@ from typing import Any, cast
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
 from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, text_content_block_from_string
 from safeconfirm.config.loader import SafeConfirmConfig
+from safeconfirm.analysis.source_analyzer import binding_slot_records
 from safeconfirm.execution.confirmation import (
     build_confirmation_payload,
     is_confirmation_laundering,
@@ -13,7 +14,7 @@ from safeconfirm.execution.confirmation import (
     validate_disclosure,
 )
 from safeconfirm.execution.confirmer import get_confirmer
-from safeconfirm.execution.repair_engine import RepairEngine, repaired_args_match_corrupted
+from safeconfirm.execution.repair_engine import RepairEngine
 from safeconfirm.pipeline.orchestrator import SafeConfirmPipeline
 from safeconfirm.types.models import InterventionRecordModel, InterventionType
 
@@ -35,7 +36,7 @@ class InterventionExecutor:
     def __init__(self, config: SafeConfirmConfig) -> None:
         self.config = config
         self.templates = load_templates(config.templates_path)
-        self.confirmer = get_confirmer(config.simulated_confirmer)
+        self.confirmer = get_confirmer()
         self.repair_engine = RepairEngine(config)
 
     def apply(
@@ -86,10 +87,7 @@ class InterventionExecutor:
 
             record.repair_attempted = True
             repair_outcome = self.repair_engine.attempt_repair(tool_call, record, runtime, env, extra_args)
-            if not repair_outcome.success or (
-                repair_outcome.tool_call is not None
-                and repaired_args_match_corrupted(repair_outcome.tool_call.args, extra_args)
-            ):
+            if not repair_outcome.success:
                 record.repair_result = "failed"
                 record.selected_intervention = self._repair_fallback().value
                 record.executed = False
@@ -112,7 +110,7 @@ class InterventionExecutor:
             )
             _copy_reanalysis(record, reanalysis)
 
-            if any(slot_record.authorization_gap for slot_record in record.slot_records):
+            if any(slot_record.authorization_gap for slot_record in binding_slot_records(record.slot_records)):
                 record.selected_intervention = self._repair_fallback().value
                 record.executed = False
                 record.executed_binding = None

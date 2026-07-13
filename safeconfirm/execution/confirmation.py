@@ -27,13 +27,19 @@ def load_templates(templates_path: Path) -> dict[str, str]:
 
 def required_disclosures_for_record(record: InterventionRecordModel) -> list[str]:
     return [
-        r.slot.name for r in record.slot_records if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD
+        slot_record.slot.name
+        for slot_record in record.slot_records
+        if slot_record.slot.slot_class == "binding"
+        and slot_record.authorization_gap
+        and slot_record.slot.risk_weight >= RISK_GAP_THRESHOLD
     ]
 
 
 def build_slot_disclosures(record: InterventionRecordModel) -> list[SlotDisclosureModel]:
     disclosures: list[SlotDisclosureModel] = []
     for slot_record in record.slot_records:
+        if slot_record.slot.slot_class != "binding":
+            continue
         if not slot_record.authorization_gap or slot_record.slot.risk_weight < RISK_GAP_THRESHOLD:
             continue
         evidence = slot_record.evidence[0] if slot_record.evidence else None
@@ -122,7 +128,13 @@ def is_confirmation_laundering(
 ) -> bool:
     if response.outcome != "approved":
         return False
-    gap_slots = [r for r in record.slot_records if r.authorization_gap and r.slot.risk_weight >= RISK_GAP_THRESHOLD]
+    gap_slots = [
+        slot_record
+        for slot_record in record.slot_records
+        if slot_record.slot.slot_class == "binding"
+        and slot_record.authorization_gap
+        and slot_record.slot.risk_weight >= RISK_GAP_THRESHOLD
+    ]
     if not gap_slots:
         return False
     if payload.intervention == "VAGUE_CONFIRM":

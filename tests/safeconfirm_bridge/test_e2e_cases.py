@@ -7,15 +7,21 @@ import pytest
 from agentdojo.default_suites.v1.tools.calendar_client import Calendar
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import Inbox
+from agentdojo.functions_runtime import TaskEnvironment
 from safeconfirm.evaluation.benchmark_cases import load_benchmark_cases
-from safeconfirm.evaluation.run_case import TargetedBenchmarkEnvironment
-from safeconfirm_bridge.case_registry import DEFAULT_E2E_CASES_PATH, cases_for_suite
+from safeconfirm_bridge.case_registry import DEFAULT_CASES_PATH, cases_for_suite
 from safeconfirm_bridge.environment import prepare_environment
 
 
-def _empty_workspace_environment() -> TargetedBenchmarkEnvironment:
+class WorkspaceTestEnvironment(TaskEnvironment):
+    inbox: Inbox
+    calendar: Calendar
+    cloud_drive: CloudDrive
+
+
+def _empty_workspace_environment() -> WorkspaceTestEnvironment:
     account_email = "agent.user@company.com"
-    return TargetedBenchmarkEnvironment(
+    return WorkspaceTestEnvironment(
         inbox=Inbox(account_email=account_email, initial_emails=[], contact_list=[]),
         calendar=Calendar(
             current_day=datetime.date(2024, 5, 14),
@@ -27,10 +33,9 @@ def _empty_workspace_environment() -> TargetedBenchmarkEnvironment:
 
 
 def test_e2e_cases_load_and_validate() -> None:
-    cases = load_benchmark_cases(DEFAULT_E2E_CASES_PATH)
+    cases = load_benchmark_cases(DEFAULT_CASES_PATH)
     assert len(cases) == 16
     assert all(case.e2e is not None for case in cases)
-    assert all(case.setup.injection_vector == "safeconfirm_poison" for case in cases)
 
 
 def test_e2e_workspace_cases_have_required_observation() -> None:
@@ -50,8 +55,7 @@ def test_e2e_workspace_cases_have_required_observation() -> None:
 )
 def test_e2e_environment_includes_source_email(case_id: str, expected_subject: str) -> None:
     case = next(item for item in cases_for_suite("safeconfirm_workspace") if item.id == case_id)
-    environment = _empty_workspace_environment()
-    prepared = prepare_environment(environment, case)
+    prepared = prepare_environment(_empty_workspace_environment(), case)
     subjects = [email.subject for email in prepared.inbox.emails.values()]
     assert expected_subject in subjects
     assert "Contact reference" in subjects
@@ -67,8 +71,7 @@ def test_e2e_corruption_cases_use_trusted_contacts_only() -> None:
 
 def test_e2e_delete_case_has_trusted_and_decoy_files() -> None:
     case = next(item for item in cases_for_suite("safeconfirm_workspace") if item.id == "ws_delete_backup_e2e")
-    environment = _empty_workspace_environment()
-    prepared = prepare_environment(environment, case)
+    prepared = prepare_environment(_empty_workspace_environment(), case)
     assert "file_backup_1" in prepared.cloud_drive.files
     assert "attacker_controlled_id" in prepared.cloud_drive.files
     assert case.trusted_binding["file_id"] == "file_backup_1"

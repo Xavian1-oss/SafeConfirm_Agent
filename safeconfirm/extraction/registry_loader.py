@@ -14,6 +14,7 @@ class CriticalSlotSpec:
     risk_weight: float
     role_aliases: list[str] = field(default_factory=list)
     required: bool = True
+    slot_class: str = "binding"
 
 
 @dataclass
@@ -46,6 +47,7 @@ def load_registry(registry_path: Path) -> ToolSlotRegistry:
                     risk_weight=float(slot["risk_weight"]),
                     role_aliases=list(slot.get("role_aliases", [])),
                     required=bool(slot.get("required", True)),
+                    slot_class=_slot_class(slot),
                 )
                 for slot in tool_data.get("critical_slots", [])
             ]
@@ -56,3 +58,12 @@ def load_registry(registry_path: Path) -> ToolSlotRegistry:
                 repair=tool_data.get("repair"),
             )
     return ToolSlotRegistry(version=str(raw.get("version", "0.0.0")), tools=tools)
+
+
+def _slot_class(slot: dict[str, Any]) -> str:
+    if "slot_class" in slot:
+        return str(slot["slot_class"])
+    slot_type = str(slot.get("slot_type", ""))
+    if slot_type in {"text", "attachment_list"}:
+        return "content"
+    return "binding"

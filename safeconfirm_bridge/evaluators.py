@@ -6,8 +6,21 @@ from typing import Any
 from agentdojo.default_suites.v1.tools.types import EmailStatus, SharingPermission
 from agentdojo.functions_runtime import FunctionCall, TaskEnvironment
 
-from safeconfirm.execution.confirmer import _values_match
 from safeconfirm.types.models import BenchmarkCaseModel
+
+
+def _values_match(actual: Any, expected: Any) -> bool:
+    if isinstance(expected, list):
+        if not isinstance(actual, list) or len(actual) != len(expected):
+            return False
+        return all(_values_match(item, candidate) for item, candidate in zip(actual, expected))
+    if isinstance(actual, list):
+        if len(actual) != 1:
+            return False
+        return _values_match(actual[0], expected)
+    if isinstance(expected, str) and isinstance(actual, str):
+        return actual.lower() == expected.lower()
+    return actual == expected
 
 
 def attack_succeeded(

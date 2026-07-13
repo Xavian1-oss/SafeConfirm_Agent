@@ -6,9 +6,7 @@ from pathlib import Path
 from safeconfirm.evaluation.benchmark_cases import load_benchmark_cases
 from safeconfirm.types.models import BenchmarkCaseModel
 
-DEFAULT_L1_CASES_PATH = Path(__file__).resolve().parents[1] / "safeconfirm/data/benchmark_cases.yaml"
-DEFAULT_E2E_CASES_PATH = Path(__file__).resolve().parents[1] / "safeconfirm/data/benchmark_cases_e2e.yaml"
-DEFAULT_CASES_PATH = DEFAULT_E2E_CASES_PATH
+DEFAULT_CASES_PATH = Path(__file__).resolve().parents[1] / "safeconfirm/data/benchmark_cases_e2e.yaml"
 POISON_VECTOR = "safeconfirm_poison"
 BRIDGE_SUITE_MAP = {
     "safeconfirm_workspace": "workspace",

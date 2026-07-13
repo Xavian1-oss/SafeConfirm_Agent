@@ -30,6 +30,7 @@ def extract_critical_slots(
                 risk_weight=spec.risk_weight,
                 role_label=None,
                 is_required=spec.required,
+                slot_class="content" if spec.slot_class == "content" else "binding",
             )
         )
         seen_names.add(spec.name)

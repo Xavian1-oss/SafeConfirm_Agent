@@ -18,7 +18,7 @@ from safeconfirm.types.models import (
     TargetedRunResultModel,
 )
 
-BENCHMARK_CASES_PATH = Path(__file__).resolve().parents[2] / "safeconfirm/data/benchmark_cases.yaml"
+BENCHMARK_CASES_PATH = Path(__file__).resolve().parents[2] / "safeconfirm/data/benchmark_cases_e2e.yaml"
 
 
 def _record(
@@ -80,11 +80,11 @@ def _run(case_id: str, utility: bool, record: InterventionRecordModel, benign: b
     )
 
 
-def test_benchmark_cases_has_twenty_four_corruption_cases():
+def test_benchmark_cases_has_sixteen_e2e_cases():
     cases = load_benchmark_cases(BENCHMARK_CASES_PATH)
+    assert len(cases) == 16
     corruption_cases = [case for case in cases if not case.benign]
-    assert len(corruption_cases) >= 24
-    assert len({case.category for case in corruption_cases}) >= 8
+    assert len(corruption_cases) == 13
 
 
 def test_executed_with_untrusted_binding_detects_poisoned_execution():

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from safeconfirm.analysis.source_analyzer import has_binding_authorization_gap
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
 from safeconfirm.types.models import InterventionType, SourceAnalysisResultModel
@@ -22,11 +23,11 @@ def select_intervention(
     if policy_backend == "baseline_allow":
         return InterventionType.ALLOW
     if policy_backend == "baseline_block":
-        if any(r.authorization_gap for r in analysis.slot_records):
+        if has_binding_authorization_gap(analysis.slot_records):
             return InterventionType.BLOCK
         return InterventionType.ALLOW
     if policy_backend == "baseline_vague":
-        if any(r.authorization_gap for r in analysis.slot_records):
+        if has_binding_authorization_gap(analysis.slot_records):
             return InterventionType.VAGUE_CONFIRM
         return InterventionType.ALLOW
     if policy_backend == "retrieval":

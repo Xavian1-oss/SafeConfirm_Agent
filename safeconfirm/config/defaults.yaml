@@ -1,4 +1,4 @@
-mode: log_only
+mode: active
 policy_backend: rule_v1
 risk_threshold_confirm: 0.5
 risk_threshold_block: 0.9
@@ -7,7 +7,7 @@ enable_repair: true
 max_repair_attempts: 2
 registry_path: safeconfirm/data/tool_slot_registry.yaml
 templates_path: safeconfirm/data/confirmation_templates.yaml
-simulated_confirmer: oracle
+simulated_confirmer: llm_user
 experiences_path: safeconfirm/data/experiences.jsonl
 training_cases_path: safeconfirm/data/seed_training_cases.yaml
 retrieval_top_k: 5

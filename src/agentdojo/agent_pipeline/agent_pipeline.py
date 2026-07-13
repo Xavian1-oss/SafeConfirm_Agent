@@ -105,6 +105,12 @@ def get_llm(provider: str, model: str, model_id: str | None, tool_delimiter: str
     elif provider == "google":
         client = genai.Client(vertexai=True, project=os.getenv("GCP_PROJECT"), location=os.getenv("GCP_LOCATION"))
         llm = GoogleLLM(model, client)
+    elif provider == "deepseek":
+        client = openai.OpenAI(
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        )
+        llm = OpenAILLM(client, model)
     elif provider == "local":
         port = os.getenv("LOCAL_LLM_PORT", 8000)
         client = openai.OpenAI(

@@ -8,7 +8,9 @@ from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.logging import Logger
 from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlock, text_content_block_from_string
 from safeconfirm.config.loader import SafeConfirmConfig
+from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.intervention_executor import InterventionExecutor
+from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
 from safeconfirm.pipeline.orchestrator import (
     SafeConfirmPipeline,
     build_log_payload,
@@ -24,15 +26,19 @@ class SafeConfirmIntervention(BasePipelineElement):
         mode: str | None = "log_only",
         policy_backend: str | None = None,
         config_path: str | None = None,
+        confirmer_model: str | None = None,
     ) -> None:
         config = SafeConfirmConfig.load(config_path)
         if mode is not None:
             config.mode = mode
         if policy_backend is not None:
             config.policy_backend = policy_backend
+        config.simulated_confirmer = "llm_user"
         self.config = config
+        self.confirmer_model = confirmer_model
         self.pipeline = SafeConfirmPipeline(config)
         self.executor = InterventionExecutor(config)
+        self.executor.confirmer = LLMUserConfirmer(model=confirmer_model) if confirmer_model else get_confirmer()
 
     def query(
         self,

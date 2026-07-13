@@ -7,7 +7,6 @@ from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, Func
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
-from safeconfirm.execution.confirmer import _values_match
 from safeconfirm.types.models import InterventionRecordModel
 
 
@@ -59,21 +58,19 @@ class RepairEngine:
         if role_label is None:
             return RepairOutcome(success=False, reason="missing_role_label")
 
-        trusted_email = _trusted_email_from_case(extra_args, role_slot)
+        trusted_email: str | None = None
+        if lookup_tool not in runtime.functions:
+            return RepairOutcome(success=False, reason="lookup_tool_unavailable")
+        trusted_email = _lookup_contact_email(
+            runtime,
+            env,
+            lookup_tool,
+            role_label,
+            tool_call,
+            role_slot,
+        )
         if trusted_email is None:
-            if lookup_tool not in runtime.functions:
-                return RepairOutcome(success=False, reason="lookup_tool_unavailable")
-            trusted_email = _lookup_contact_email(
-                runtime,
-                env,
-                lookup_tool,
-                role_label,
-                tool_call,
-                role_slot,
-                extra_args,
-            )
-            if trusted_email is None:
-                return RepairOutcome(success=False, reason="contact_not_found")
+            return RepairOutcome(success=False, reason="contact_not_found")
 
         new_args = dict(tool_call.args)
         new_args[role_slot] = _format_slot_value(new_args.get(role_slot), trusted_email)
@@ -108,18 +105,6 @@ def _format_slot_value(current_value: object, trusted_email: str) -> FunctionCal
     return trusted_email
 
 
-def _trusted_email_from_case(extra_args: dict | None, role_slot: str) -> str | None:
-    if extra_args is None:
-        return None
-    trusted_binding = extra_args.get("safeconfirm", {}).get("benchmark_case", {}).get("trusted_binding", {})
-    trusted_value = trusted_binding.get(role_slot)
-    if trusted_value is None:
-        return None
-    if isinstance(trusted_value, list):
-        return str(trusted_value[0]).lower() if trusted_value else None
-    return str(trusted_value).lower()
-
-
 def _lookup_contact_email(
     runtime: FunctionsRuntime,
     env: TaskEnvironment,
@@ -127,13 +112,12 @@ def _lookup_contact_email(
     role_label: str,
     tool_call: FunctionCall,
     role_slot: str,
-    extra_args: dict | None,
 ) -> str | None:
     contacts, error = runtime.run_function(env, lookup_tool, {"query": role_label})
     if error or not isinstance(contacts, list) or not contacts:
         return None
 
-    excluded_values = _corrupted_values(extra_args) | _current_slot_values(tool_call, role_slot)
+    excluded_values = _current_slot_values(tool_call, role_slot)
     for contact in contacts:
         if not isinstance(contact, EmailContact):
             continue
@@ -151,28 +135,3 @@ def _current_slot_values(tool_call: FunctionCall, role_slot: str) -> set[str]:
     if isinstance(current, list):
         return {str(item).lower() for item in current}
     return {str(current).lower()}
-
-
-def _corrupted_values(extra_args: dict | None) -> set[str]:
-    if extra_args is None:
-        return set()
-    corrupted_slots = extra_args.get("safeconfirm", {}).get("benchmark_case", {}).get("corrupted_slots", {})
-    values: set[str] = set()
-    for corrupted_value in corrupted_slots.values():
-        if isinstance(corrupted_value, list):
-            values.update(str(item).lower() for item in corrupted_value)
-        else:
-            values.add(str(corrupted_value).lower())
-    return values
-
-
-def repaired_args_match_corrupted(tool_args: dict, extra_args: dict | None) -> bool:
-    if extra_args is None:
-        return False
-    corrupted_slots = extra_args.get("safeconfirm", {}).get("benchmark_case", {}).get("corrupted_slots", {})
-    for slot_name, corrupted_value in corrupted_slots.items():
-        if slot_name not in tool_args:
-            continue
-        if _values_match(tool_args[slot_name], corrupted_value):
-            return True
-    return False

@@ -34,6 +34,23 @@ SOURCE_MULTIPLIERS: dict[SourceTrust, float] = {
 
 RISK_GAP_THRESHOLD = 0.5
 
+CONTENT_DELEGATION_PHRASES = (
+    "forward",
+    "send its contents",
+    "send the contents",
+    "relay",
+    "summarize and send",
+    "summary and send",
+)
+
+
+def binding_slot_records(records: list[SlotSourceRecordModel]) -> list[SlotSourceRecordModel]:
+    return [record for record in records if record.slot.slot_class == "binding"]
+
+
+def has_binding_authorization_gap(records: list[SlotSourceRecordModel]) -> bool:
+    return any(record.authorization_gap for record in binding_slot_records(records))
+
 
 def analyze_sources(
     query: str,
@@ -47,6 +64,7 @@ def analyze_sources(
     role_aliases = collect_role_aliases(entry.critical_slots) if entry else []
     trust_index = build_trust_index(messages, role_aliases)
     action_type_ok = action_type_authorized(extraction.tool_name, query, registry)
+    content_delegated = user_delegated_content(query)
 
     slot_records: list[SlotSourceRecordModel] = []
     for slot in extraction.critical_slots:
@@ -59,16 +77,20 @@ def analyze_sources(
             action_type_ok,
             risk_threshold,
             trusted_contact_emails,
+            content_delegated=content_delegated,
         )
         slot_records.append(record)
 
-    overall_risk = max((r.risk_score for r in slot_records), default=0.0)
+    binding_records = binding_slot_records(slot_records)
+    overall_risk = max((record.risk_score for record in binding_records), default=0.0)
     has_untrusted = any(
-        r.source in {SourceTrust.UNTRUSTED_OBSERVATION, SourceTrust.AGENT_INFERRED, SourceTrust.UNKNOWN}
-        and r.authorization_gap
-        for r in slot_records
+        record.source in {SourceTrust.UNTRUSTED_OBSERVATION, SourceTrust.AGENT_INFERRED, SourceTrust.UNKNOWN}
+        and record.authorization_gap
+        for record in binding_records
     )
-    has_role_only = any(r.authorization_gap and r.slot.role_label is not None for r in slot_records)
+    has_role_only = any(
+        record.authorization_gap and record.slot.role_label is not None for record in binding_records
+    )
 
     return SourceAnalysisResultModel(
         slot_records=slot_records,
@@ -77,6 +99,13 @@ def analyze_sources(
         has_role_only_binding=has_role_only,
         action_type_authorized=action_type_ok,
     )
+
+
+def user_delegated_content(query: str) -> bool:
+    lowered = query.lower()
+    if any(phrase in lowered for phrase in CONTENT_DELEGATION_PHRASES):
+        return True
+    return "read" in lowered and "send" in lowered
 
 
 def action_type_authorized(tool_name: str, query: str, registry: ToolSlotRegistry) -> bool:
@@ -106,6 +135,8 @@ def _analyze_slot(
     action_type_ok: bool,
     risk_threshold: float,
     trusted_contact_emails: set[str] | None = None,
+    *,
+    content_delegated: bool = False,
 ) -> SlotSourceRecordModel:
     values_to_check = _expand_values(slot)
     evidence: list[SourceEvidenceModel] = []
@@ -175,10 +206,14 @@ def _analyze_slot(
         source = SourceTrust.AGENT_INFERRED
 
     gap = (
-        action_type_ok
+        slot.slot_class == "binding"
+        and action_type_ok
         and source not in {SourceTrust.USER_EXPLICIT, SourceTrust.TRUSTED_CONTACT, SourceTrust.TRUSTED_ENV}
         and slot.risk_weight >= risk_threshold
     )
+    if slot.slot_class == "content" and content_delegated and action_type_ok:
+        gap = False
+
     multiplier = SOURCE_MULTIPLIERS[source]
     risk_score = slot.risk_weight * multiplier * (1.0 if gap else 0.0)
 

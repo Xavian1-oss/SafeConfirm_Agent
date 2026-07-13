@@ -13,6 +13,7 @@ from openai.types.chat import (
     ChatCompletionMessageToolCall,
     ChatCompletionMessageToolCallParam,
     ChatCompletionReasoningEffort,
+    ChatCompletionSystemMessageParam,
     ChatCompletionToolMessageParam,
     ChatCompletionToolParam,
     ChatCompletionUserMessageParam,
@@ -54,6 +55,11 @@ def _is_reasoning_model(model_name: str) -> bool:
     return any(model in model_name for model in _REASONING_MODELS)
 
 
+def _uses_developer_role_for_system(model_name: str) -> bool:
+    """OpenAI o-series models use `developer`; most compatible APIs expect `system`."""
+    return _is_reasoning_model(model_name)
+
+
 @overload
 def _content_blocks_to_openai_content_blocks(
     message: ChatUserMessage | ChatSystemMessage,
@@ -77,9 +83,10 @@ def _content_blocks_to_openai_content_blocks(
 def _message_to_openai(message: ChatMessage, model_name: str) -> ChatCompletionMessageParam:
     match message["role"]:
         case "system":
-            return ChatCompletionDeveloperMessageParam(
-                role="developer", content=_content_blocks_to_openai_content_blocks(message)
-            )
+            content = _content_blocks_to_openai_content_blocks(message)
+            if _uses_developer_role_for_system(model_name):
+                return ChatCompletionDeveloperMessageParam(role="developer", content=content)
+            return ChatCompletionSystemMessageParam(role="system", content=content)
         case "user":
             return ChatCompletionUserMessageParam(
                 role="user", content=_content_blocks_to_openai_content_blocks(message)
