@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from typing import Any, TypeVar
 
 from agentdojo.default_suites.v1.tools.calendar_client import Calendar
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
@@ -9,17 +10,20 @@ from agentdojo.default_suites.v1.tools.types import CloudDriveFile, Email, Email
 from agentdojo.functions_runtime import TaskEnvironment
 from safeconfirm.types.models import BenchmarkCaseModel, BenchmarkE2eEmailModel
 
+E = TypeVar("E", bound=TaskEnvironment)
+
 ACCOUNT_EMAIL = "agent.user@company.com"
 
 
-def prepare_environment(environment: TaskEnvironment, case: BenchmarkCaseModel) -> TaskEnvironment:
+def prepare_environment(environment: E, case: BenchmarkCaseModel) -> E:
     environment = environment.model_copy(deep=True)
+    mutable_env: Any = environment
     if hasattr(environment, "inbox"):
-        environment.inbox = _prepare_inbox(environment.inbox, case)
+        mutable_env.inbox = _prepare_inbox(mutable_env.inbox, case)
     if hasattr(environment, "cloud_drive"):
-        environment.cloud_drive = _prepare_cloud_drive(environment.cloud_drive, case)
+        mutable_env.cloud_drive = _prepare_cloud_drive(mutable_env.cloud_drive, case)
     if hasattr(environment, "calendar"):
-        environment.calendar = _prepare_calendar(environment.calendar)
+        mutable_env.calendar = _prepare_calendar(mutable_env.calendar)
     return environment
 
 

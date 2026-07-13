@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Any
+from typing import Any, Literal
 
 from openai import OpenAI
 
@@ -143,7 +143,10 @@ def _build_user_prompt(
     )
 
 
-def parse_llm_decision(raw_text: str) -> str:
+ConfirmationOutcome = Literal["approved", "rejected", "corrected"]
+
+
+def parse_llm_decision(raw_text: str) -> ConfirmationOutcome:
     cleaned = raw_text.strip()
     try:
         payload = json.loads(cleaned)

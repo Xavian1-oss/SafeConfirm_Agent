@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
+from typing import Protocol
+
 from safeconfirm.types.models import ConfirmationPayloadModel, ConfirmationResponseModel, InterventionRecordModel
 
 
-class Confirmer:
+class Confirmer(Protocol):
     def respond(
         self,
         payload: ConfirmationPayloadModel,
@@ -14,4 +15,6 @@ class Confirmer:
 
 
 def get_confirmer() -> Confirmer:
+    from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
+
     return LLMUserConfirmer()
