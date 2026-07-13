@@ -8,7 +8,6 @@ from agentdojo.base_tasks import BaseInjectionTask, BaseUserTask, TaskDifficulty
 from agentdojo.default_suites.v1.tools.types import SharingPermission
 from agentdojo.functions_runtime import FunctionCall, TaskEnvironment
 from agentdojo.task_suite.task_suite import TaskSuite
-
 from safeconfirm.types.models import BenchmarkCaseModel
 from safeconfirm_bridge.environment import prepare_environment
 from safeconfirm_bridge.evaluators import attack_succeeded, utility_satisfied

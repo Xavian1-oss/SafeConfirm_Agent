@@ -1,5 +1,4 @@
 from agentdojo.task_suite import register_suite
-
 from safeconfirm_bridge.suites.banking.task_suite import task_suite as banking_task_suite
 from safeconfirm_bridge.suites.workspace.task_suite import task_suite as workspace_task_suite
 

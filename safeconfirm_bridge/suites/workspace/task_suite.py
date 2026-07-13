@@ -3,7 +3,6 @@ from pathlib import Path
 from agentdojo.default_suites.v1.workspace.task_suite import TOOLS, WorkspaceEnvironment
 from agentdojo.functions_runtime import make_function
 from agentdojo.task_suite import TaskSuite
-
 from safeconfirm_bridge.case_registry import cases_for_suite
 from safeconfirm_bridge.task_factory import register_cases_for_suite
 

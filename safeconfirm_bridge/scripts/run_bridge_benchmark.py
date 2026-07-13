@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from agentdojo.attacks.attack_registry import load_attack
 from agentdojo.models import ModelsEnum
 from agentdojo.task_suite.load_suites import get_suite
-
 from safeconfirm_bridge.benchmark import BENCHMARK_VERSION
 from safeconfirm_bridge.case_registry import matched_injection_task_id
 from safeconfirm_bridge.e2e_metrics import compute_e2e_metrics, save_e2e_metrics
@@ -24,10 +23,7 @@ def _print_metrics(metrics) -> None:
     if metrics.confirmer_model:
         print(f"Confirmer model: {metrics.confirmer_model}")
     print(f"TSR: {metrics.tsr * 100:.2f}% | ASR (corruption): {metrics.asr * 100:.2f}%")
-    print(
-        f"Corruption TSR: {metrics.corruption_tsr * 100:.2f}% | "
-        f"Benign TSR: {metrics.benign_tsr * 100:.2f}%"
-    )
+    print(f"Corruption TSR: {metrics.corruption_tsr * 100:.2f}% | Benign TSR: {metrics.benign_tsr * 100:.2f}%")
     print(
         f"Defense success: {metrics.defense_success_rate * 100:.2f}% | "
         f"Action rate: {metrics.action_rate * 100:.2f}% | "

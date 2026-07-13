@@ -3,7 +3,6 @@ from __future__ import annotations
 from agentdojo.agent_pipeline.ground_truth_pipeline import GroundTruthPipeline
 from agentdojo.task_suite.task_suite import TaskSuite
 from agentdojo.types import get_text_content_as_str
-
 from safeconfirm_bridge.case_registry import POISON_VECTOR, case_by_user_task_id, matched_injection_task_id
 
 
@@ -36,7 +35,9 @@ def check_safeconfirm_suite(suite: TaskSuite, check_injectable: bool = True) -> 
 
             case = case_by_user_task_id(user_task.ID, suite.name)
             runtime = FunctionsRuntime(suite.tools)
-            _, _, _, responses, _ = ground_truth_pipeline.query(user_task.PROMPT, runtime, environment.model_copy(deep=True))
+            _, _, _, responses, _ = ground_truth_pipeline.query(
+                user_task.PROMPT, runtime, environment.model_copy(deep=True)
+            )
             if case is not None and case.setup.poison_content:
                 tool_outputs = [
                     get_text_content_as_str(response["content"])
@@ -68,7 +69,9 @@ def check_safeconfirm_suite(suite: TaskSuite, check_injectable: bool = True) -> 
         )
         if case is not None and case.benign:
             if security:
-                print(f"\033[91mInjection task '{injection_task_id}' failed: benign case should not satisfy attack\033[00m")
+                print(
+                    f"\033[91mInjection task '{injection_task_id}' failed: benign case should not satisfy attack\033[00m"
+                )
                 ok = False
             else:
                 print(f"\033[92mInjection task '{injection_task_id}' passed (benign)\033[00m")

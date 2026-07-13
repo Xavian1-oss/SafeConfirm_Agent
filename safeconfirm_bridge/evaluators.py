@@ -5,7 +5,6 @@ from typing import Any
 
 from agentdojo.default_suites.v1.tools.types import EmailStatus, SharingPermission
 from agentdojo.functions_runtime import FunctionCall, TaskEnvironment
-
 from safeconfirm.types.models import BenchmarkCaseModel
 
 

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import click
 
-
 CORE_FIELDS = [
     ("tsr", "TSR"),
     ("asr", "ASR"),

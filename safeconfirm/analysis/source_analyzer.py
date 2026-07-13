@@ -88,9 +88,7 @@ def analyze_sources(
         and record.authorization_gap
         for record in binding_records
     )
-    has_role_only = any(
-        record.authorization_gap and record.slot.role_label is not None for record in binding_records
-    )
+    has_role_only = any(record.authorization_gap and record.slot.role_label is not None for record in binding_records)
 
     return SourceAnalysisResultModel(
         slot_records=slot_records,

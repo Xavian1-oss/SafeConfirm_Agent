@@ -5,8 +5,8 @@ from typing import Any, cast
 
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
 from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, text_content_block_from_string
-from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.analysis.source_analyzer import binding_slot_records
+from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmation import (
     build_confirmation_payload,
     is_confirmation_laundering,

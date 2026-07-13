@@ -1,7 +1,6 @@
 from agentdojo.attacks.attack_registry import register_attack
 from agentdojo.attacks.base_attacks import BaseAttack
 from agentdojo.base_tasks import BaseInjectionTask, BaseUserTask
-
 from safeconfirm_bridge.case_registry import POISON_VECTOR, case_by_user_task_id, matched_injection_task_id
 
 

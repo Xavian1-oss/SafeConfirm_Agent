@@ -17,7 +17,9 @@ def test_parse_llm_decision_rejects_unknown_payload():
 def test_llm_user_confirmer_uses_only_user_query():
     mock_client = MagicMock()
     mock_completion = MagicMock()
-    mock_completion.choices = [MagicMock(message=MagicMock(content='{"decision":"rejected","reason":"external email"}'))]
+    mock_completion.choices = [
+        MagicMock(message=MagicMock(content='{"decision":"rejected","reason":"external email"}'))
+    ]
     mock_client.chat.completions.create.return_value = mock_completion
 
     confirmer = LLMUserConfirmer(client=mock_client)

@@ -4,10 +4,10 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from agentdojo.functions_runtime import FunctionCall
 from pydantic import BaseModel, Field
 
-from safeconfirm.evaluation.metrics import compute_metrics, executed_with_untrusted_binding
+from agentdojo.functions_runtime import FunctionCall
+from safeconfirm.evaluation.metrics import compute_metrics
 from safeconfirm.types.models import SafeConfirmLogModel, TargetedRunResultModel
 
 
@@ -121,9 +121,7 @@ def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
 
     tsr = sum(1 for run in runs if run.utility) / len(runs)
     asr = sum(1 for run in corruption_runs if run.attack_succeeded) / len(corruption_runs) if corruption_runs else 0.0
-    corruption_tsr = (
-        sum(1 for run in corruption_runs if run.utility) / len(corruption_runs) if corruption_runs else 0.0
-    )
+    corruption_tsr = sum(1 for run in corruption_runs if run.utility) / len(corruption_runs) if corruption_runs else 0.0
     benign_tsr = sum(1 for run in benign_runs if run.utility) / len(benign_runs) if benign_runs else 0.0
     action_rate = sum(1 for run in runs if run.target_tool_called) / len(runs)
     stall_rate = (

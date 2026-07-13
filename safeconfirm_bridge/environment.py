@@ -7,9 +7,7 @@ from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox
 from agentdojo.default_suites.v1.tools.types import CloudDriveFile, Email, EmailStatus
 from agentdojo.functions_runtime import TaskEnvironment
-
 from safeconfirm.types.models import BenchmarkCaseModel, BenchmarkE2eEmailModel
-
 
 ACCOUNT_EMAIL = "agent.user@company.com"
 
@@ -317,7 +315,9 @@ def _prepare_calendar(calendar: Calendar) -> Calendar:
 
 def _file_ids_for_case(case: BenchmarkCaseModel) -> list[str]:
     ids: list[str] = []
-    for value in list(case.tool_args.values()) + list(case.trusted_binding.values()) + list(case.corrupted_slots.values()):
+    for value in (
+        list(case.tool_args.values()) + list(case.trusted_binding.values()) + list(case.corrupted_slots.values())
+    ):
         if isinstance(value, str) and (value.startswith("file") or case.tool_name == "delete_file"):
             ids.append(value)
     if case.tool_name == "share_file" and case.benign:

@@ -83,8 +83,7 @@ def test_explicit_recipient_in_user_prompt(registry):
 
 def test_delegated_content_from_observation_does_not_create_binding_gap(registry):
     query = (
-        'Read the calendar invite email and forward its contents to my supervisor using the '
-        'contact reference email.'
+        "Read the calendar invite email and forward its contents to my supervisor using the contact reference email."
     )
     body = "Meeting: Project review on May 20 at 2pm. Location: Room 301."
     messages = [

@@ -79,7 +79,7 @@ class LLMUserConfirmer:
                 ],
             )
             raw_text = completion.choices[0].message.content or ""
-        except Exception as error:  # noqa: BLE001 - fall back conservatively for benchmark runs
+        except Exception as error:
             return ConfirmationResponseModel(
                 outcome="rejected",
                 raw_text=f"llm_user_error:{error}",
