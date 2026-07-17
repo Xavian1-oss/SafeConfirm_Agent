@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from agentdojo.default_suites.v1.tools.email_client import EmailContact
@@ -38,6 +39,8 @@ class RepairEngine:
         strategy = entry.repair.get("strategy")
         if strategy == "contact_lookup":
             return self._contact_lookup(tool_call, record, runtime, env, entry.repair, extra_args)
+        if strategy == "trusted_account_lookup":
+            return self._trusted_account_lookup(tool_call, record, env, entry.repair, extra_args)
         return RepairOutcome(success=False, reason=f"unsupported_strategy:{strategy}")
 
     def _contact_lookup(
@@ -75,10 +78,6 @@ class RepairEngine:
         new_args = dict(tool_call.args)
         new_args[role_slot] = _format_slot_value(new_args.get(role_slot), trusted_email)
 
-        permission_cap = repair_cfg.get("permission_cap")
-        if permission_cap and "permission" in new_args:
-            new_args["permission"] = permission_cap
-
         repaired_call = FunctionCall(
             function=tool_call.function,
             args=new_args,
@@ -90,6 +89,35 @@ class RepairEngine:
             tool_call=repaired_call,
             trusted_emails={trusted_email},
         )
+
+    def _trusted_account_lookup(
+        self,
+        tool_call: FunctionCall,
+        record: InterventionRecordModel,
+        env: TaskEnvironment,
+        repair_cfg: dict,
+        extra_args: dict | None = None,
+    ) -> RepairOutcome:
+        role_slot = repair_cfg.get("role_slot", "recipient")
+        role_label = _role_label_for_slot(record, role_slot)
+        if role_label is None:
+            role_label = _role_from_user_query(extra_args, repair_cfg.get("role_aliases", []))
+        if role_label is None:
+            return RepairOutcome(success=False, reason="missing_role_label")
+
+        trusted_account = _trusted_account_from_filesystem(env, role_label)
+        if trusted_account is None:
+            return RepairOutcome(success=False, reason="trusted_account_not_found")
+
+        new_args = dict(tool_call.args)
+        new_args[role_slot] = _format_slot_value(new_args.get(role_slot), trusted_account)
+        repaired_call = FunctionCall(
+            function=tool_call.function,
+            args=new_args,
+            id=tool_call.id,
+            placeholder_args=tool_call.placeholder_args,
+        )
+        return RepairOutcome(success=True, tool_call=repaired_call, trusted_emails={trusted_account})
 
 
 def _role_label_for_slot(record: InterventionRecordModel, role_slot: str) -> str | None:
@@ -135,3 +163,29 @@ def _current_slot_values(tool_call: FunctionCall, role_slot: str) -> set[str]:
     if isinstance(current, list):
         return {str(item).lower() for item in current}
     return {str(current).lower()}
+
+
+def _role_from_user_query(extra_args: dict | None, role_aliases: list[str]) -> str | None:
+    if not extra_args or not role_aliases:
+        return None
+    query = str(extra_args.get("safeconfirm", {}).get("user_query", "")).lower()
+    for alias in role_aliases:
+        if alias.lower() in query:
+            return alias.lower()
+    return None
+
+
+def _trusted_account_from_filesystem(env: TaskEnvironment, role_label: str) -> str | None:
+    filesystem = getattr(env, "filesystem", None)
+    if filesystem is None:
+        return None
+    files = getattr(filesystem, "files", {})
+    pattern = re.compile(
+        rf"trusted\s+{re.escape(role_label)}\s+account:\s*(\S+)",
+        re.IGNORECASE,
+    )
+    for content in files.values():
+        match = pattern.search(str(content))
+        if match:
+            return match.group(1)
+    return None

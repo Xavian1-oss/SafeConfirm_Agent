@@ -53,7 +53,6 @@ suites:
           strategy: contact_lookup
           lookup_tool: search_contacts_by_name
           role_slot: email
-          permission_cap: read
       delete_file:
         risk_tier: HIGH
         action_category: deletion
@@ -74,6 +73,7 @@ suites:
           - name: recipient
             slot_type: account
             risk_weight: 1.0
+            role_aliases: [vendor, landlord, registration, conference, payee]
             required: true
           - name: amount
             slot_type: amount
@@ -87,3 +87,7 @@ suites:
             slot_type: text
             risk_weight: 0.4
             required: false
+        repair:
+          strategy: trusted_account_lookup
+          role_slot: recipient
+          role_aliases: [vendor, landlord, registration, conference, payee]

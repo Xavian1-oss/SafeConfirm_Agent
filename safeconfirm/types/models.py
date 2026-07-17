@@ -242,6 +242,7 @@ class TargetedRunResultModel(BaseModel):
 
 class InterventionMetricsModel(BaseModel):
     uar: float
+    uar_after_confirm: float = 0.0
     clr: float
     sdr: float
     tpr: float
@@ -253,3 +254,6 @@ class InterventionMetricsModel(BaseModel):
     benign_cases: int
     approved_confirmations: int
     repair_attempts: int
+    confirm_total: int = 0
+    confirm_approval_rate: float = 0.0
+    confirm_exec_rate: float = 0.0

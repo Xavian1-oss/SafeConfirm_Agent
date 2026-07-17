@@ -106,7 +106,7 @@ def build_confirmation_payload(
 
 def validate_disclosure(payload: ConfirmationPayloadModel) -> bool:
     if payload.intervention == "VAGUE_CONFIRM":
-        return True
+        return False
     prompt_lower = payload.prompt_text.lower()
     disclosed_slots = {d.slot_name for d in payload.slot_disclosures}
     for slot_name in payload.required_disclosures:

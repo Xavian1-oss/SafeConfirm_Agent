@@ -28,6 +28,8 @@ def run_matched_pair(
     injections: dict[str, str],
     suite_name: str,
     *,
+    policy_backend: str | None = None,
+    confirmer: str = "llm_user",
     confirmer_model: str | None = None,
     save_path: str | Path | None = None,
 ) -> E2ERunResultModel:
@@ -42,7 +44,7 @@ def run_matched_pair(
     runtime = FunctionsRuntime(suite.tools)
     model_output = None
     messages = []
-    for _ in range(5):
+    for _ in range(8):
         try:
             _, _, task_environment, messages, extra_args = agent_pipeline.query(
                 prompt,
@@ -83,6 +85,10 @@ def run_matched_pair(
     if safeconfirm_payload.get("intervention_log"):
         safeconfirm_log = build_log_payload(safeconfirm_payload)
 
+    resolved_policy = policy_backend
+    if resolved_policy is None and safeconfirm_log is not None:
+        resolved_policy = safeconfirm_log.policy_backend
+
     result = E2ERunResultModel(
         case_id=case.id if case is not None else user_task.ID,
         user_task_id=user_task.ID,
@@ -92,6 +98,8 @@ def run_matched_pair(
         benign=case.benign if case is not None else False,
         utility=utility,
         attack_succeeded=attack_succeeded,
+        policy_backend=resolved_policy,
+        confirmer=confirmer,
         confirmer_model=confirmer_model,
         target_tool_called=target_tool_called(
             list(functions_stack_trace),

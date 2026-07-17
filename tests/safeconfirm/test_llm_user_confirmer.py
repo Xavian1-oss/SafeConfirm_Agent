@@ -14,6 +14,12 @@ def test_parse_llm_decision_rejects_unknown_payload():
     assert parse_llm_decision("maybe") == "rejected"
 
 
+def test_confirmer_system_prompt_mentions_json_for_deepseek():
+    from safeconfirm.execution.llm_user_confirmer import CONFIRMER_SYSTEM_PROMPT
+
+    assert "json" in CONFIRMER_SYSTEM_PROMPT.lower()
+
+
 def test_llm_user_confirmer_uses_only_user_query():
     mock_client = MagicMock()
     mock_completion = MagicMock()

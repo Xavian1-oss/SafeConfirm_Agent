@@ -10,7 +10,6 @@ from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlo
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.intervention_executor import InterventionExecutor
-from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
 from safeconfirm.pipeline.orchestrator import (
     SafeConfirmPipeline,
     build_log_payload,
@@ -27,18 +26,23 @@ class SafeConfirmIntervention(BasePipelineElement):
         policy_backend: str | None = None,
         config_path: str | None = None,
         confirmer_model: str | None = None,
+        confirmer: str | None = None,
+        enable_repair: bool | None = None,
     ) -> None:
         config = SafeConfirmConfig.load(config_path)
         if mode is not None:
             config.mode = mode
         if policy_backend is not None:
             config.policy_backend = policy_backend
-        config.simulated_confirmer = "llm_user"
+        if confirmer is not None:
+            config.simulated_confirmer = confirmer
+        if enable_repair is not None:
+            config.enable_repair = enable_repair
         self.config = config
         self.confirmer_model = confirmer_model
         self.pipeline = SafeConfirmPipeline(config)
         self.executor = InterventionExecutor(config)
-        self.executor.confirmer = LLMUserConfirmer(model=confirmer_model) if confirmer_model else get_confirmer()
+        self.executor.confirmer = get_confirmer(config.simulated_confirmer, confirmer_model)
 
     def query(
         self,

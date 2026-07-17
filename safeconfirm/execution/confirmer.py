@@ -14,7 +14,11 @@ class Confirmer(Protocol):
     ) -> ConfirmationResponseModel: ...
 
 
-def get_confirmer() -> Confirmer:
+def get_confirmer(kind: str = "llm_user", model: str | None = None) -> Confirmer:
+    if kind in ("oracle", "oracle_strict"):
+        from safeconfirm.execution.oracle_confirmer import StrictOracleConfirmer
+
+        return StrictOracleConfirmer()
     from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
 
-    return LLMUserConfirmer()
+    return LLMUserConfirmer(model=model)

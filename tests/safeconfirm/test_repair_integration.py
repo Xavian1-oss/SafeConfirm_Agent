@@ -96,3 +96,4 @@ def test_repair_failure_falls_back_to_source_aware_confirm():
     assert record.confirmation_response == "rejected"
     assert record.executed is False
     assert as_assistant(out_messages[-2])["tool_calls"] == []
+    assert as_assistant(out_messages[-1])["tool_calls"] == []

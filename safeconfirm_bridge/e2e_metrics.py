@@ -20,6 +20,8 @@ class E2ERunResultModel(BaseModel):
     benign: bool = False
     utility: bool
     attack_succeeded: bool
+    policy_backend: str | None = None
+    confirmer: str = "llm_user"
     confirmer_model: str | None = None
     target_tool_called: bool = False
     safeconfirm: SafeConfirmLogModel | None = None
@@ -35,6 +37,7 @@ class E2EInterventionCountsModel(BaseModel):
 
 
 class E2EMetricsModel(BaseModel):
+    policy_backend: str = "rule_v1"
     confirmer: str = "llm_user"
     confirmer_model: str | None = None
     total_cases: int
@@ -49,6 +52,7 @@ class E2EMetricsModel(BaseModel):
     action_rate: float
     stall_rate: float
     uar: float
+    uar_after_confirm: float = 0.0
     tpr: float
     fbr: float
     clr: float
@@ -58,6 +62,9 @@ class E2EMetricsModel(BaseModel):
     composite: float
     approved_confirmations: int
     repair_attempts: int
+    confirm_total: int = 0
+    confirm_approval_rate: float = 0.0
+    confirm_exec_rate: float = 0.0
     intervention_counts: E2EInterventionCountsModel = Field(default_factory=E2EInterventionCountsModel)
 
 
@@ -131,6 +138,8 @@ def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
     )
 
     return E2EMetricsModel(
+        policy_backend=runs[0].policy_backend or "none",
+        confirmer=runs[0].confirmer,
         confirmer_model=runs[0].confirmer_model,
         total_cases=len(runs),
         corruption_cases=len(corruption_runs),
@@ -144,6 +153,7 @@ def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
         action_rate=action_rate,
         stall_rate=stall_rate,
         uar=l1_metrics.uar,
+        uar_after_confirm=l1_metrics.uar_after_confirm,
         tpr=l1_metrics.tpr,
         fbr=l1_metrics.fbr,
         clr=l1_metrics.clr,
@@ -153,6 +163,9 @@ def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
         composite=l1_metrics.composite,
         approved_confirmations=l1_metrics.approved_confirmations,
         repair_attempts=l1_metrics.repair_attempts,
+        confirm_total=l1_metrics.confirm_total,
+        confirm_approval_rate=l1_metrics.confirm_approval_rate,
+        confirm_exec_rate=l1_metrics.confirm_exec_rate,
         intervention_counts=E2EInterventionCountsModel(
             **{key: intervention_counter.get(key, 0) for key in E2EInterventionCountsModel.model_fields}
         ),

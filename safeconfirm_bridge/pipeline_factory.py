@@ -11,7 +11,10 @@ def build_bridge_pipeline(
     model: ModelsEnum,
     defense: str | None,
     *,
+    policy_backend: str | None = None,
+    confirmer: str | None = None,
     confirmer_model: str | None = None,
+    enable_repair: bool | None = None,
 ) -> BasePipelineElement:
     if defense not in ("safeconfirm", "safeconfirm_log_only", "safeconfirm_retrieval"):
         return AgentPipeline.from_config(
@@ -29,20 +32,22 @@ def build_bridge_pipeline(
     llm = get_llm(MODEL_PROVIDERS[ModelsEnum(model)], model, None, "tool")
     llm_name = str(model)
 
+    resolved_policy = policy_backend
     if defense == "safeconfirm_log_only":
         mode = "log_only"
-        policy_backend = None
+        resolved_policy = None
     elif defense == "safeconfirm_retrieval":
         mode = "active"
-        policy_backend = "retrieval"
+        resolved_policy = resolved_policy or "retrieval"
     else:
         mode = "active"
-        policy_backend = None
 
     safeconfirm = SafeConfirmIntervention(
         mode=mode,
-        policy_backend=policy_backend,
+        policy_backend=resolved_policy,
+        confirmer=confirmer,
         confirmer_model=confirmer_model,
+        enable_repair=enable_repair,
     )
     tools_loop = ToolsExecutionLoop([safeconfirm, ToolsExecutor(tool_result_to_str), llm])
     pipeline = AgentPipeline(

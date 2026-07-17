@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
-from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, text_content_block_from_string
+from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, MessageContentBlock, text_content_block_from_string
 from safeconfirm.analysis.source_analyzer import binding_slot_records
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmation import (
@@ -30,6 +30,30 @@ CONFIRM_INTERVENTIONS = {
     InterventionType.VAGUE_CONFIRM.value,
     InterventionType.SOURCE_AWARE_CONFIRM.value,
 }
+
+
+def _assistant_message_with_tool_calls(
+    message: ChatMessage,
+    tool_calls: list[FunctionCall],
+) -> ChatAssistantMessage:
+    content = message.get("content")
+    if content is None and not tool_calls:
+        content = [text_content_block_from_string("")]
+    return ChatAssistantMessage(
+        role="assistant",
+        content=cast(list[MessageContentBlock] | None, content),
+        tool_calls=tool_calls,
+    )
+
+
+def _append_assistant_notice(messages: list[ChatMessage], text: str) -> None:
+    messages.append(
+        ChatAssistantMessage(
+            role="assistant",
+            content=[text_content_block_from_string(text)],
+            tool_calls=[],
+        )
+    )
 
 
 class InterventionExecutor:
@@ -126,8 +150,8 @@ class InterventionExecutor:
         return InterventionOutcome(messages=messages, tool_calls=updated_calls, records=records)
 
     def _repair_fallback(self) -> InterventionType:
-        if self.config.never_allow_on_untrusted:
-            return InterventionType.SOURCE_AWARE_CONFIRM
+        if self.config.policy_backend == "baseline_vague":
+            return InterventionType.VAGUE_CONFIRM
         return InterventionType.SOURCE_AWARE_CONFIRM
 
     def _confirm_batch(
@@ -161,7 +185,14 @@ class InterventionExecutor:
                 record.confirmation_response = response.outcome
                 record.confirmation_laundering_risk = laundering
 
+        # Drop the synthetic confirm user turn before returning to the agent loop.
+        # Leaving assistant(tool_calls) + user(confirm) breaks OpenAI-compatible APIs and
+        # prevents ToolsExecutor from running (it expects the last message to be assistant).
+        messages.pop()
+
         if response.outcome == "approved":
+            pending_assistant = messages[-1]
+            messages[-1] = _assistant_message_with_tool_calls(pending_assistant, list(tool_calls))
             for record in records:
                 record.executed = True
                 record.executed_binding = dict(record.tool_args)
@@ -169,6 +200,7 @@ class InterventionExecutor:
 
         if response.outcome == "corrected" and response.corrected_slots:
             updated_calls = _apply_corrected_slots(tool_calls, response.corrected_slots)
+            messages[-1] = _assistant_message_with_tool_calls(messages[-1], updated_calls)
             for record, tool_call in zip(records, updated_calls, strict=False):
                 record.tool_args = dict(tool_call.args)
                 record.executed_binding = dict(tool_call.args)
@@ -178,9 +210,9 @@ class InterventionExecutor:
         for record in records:
             record.executed = False
             record.executed_binding = None
-        return self._block_all(
-            messages, records, "SafeConfirm blocked the tool call after user rejection.", clear_prompt=False
-        )
+        messages[-1] = _assistant_message_with_tool_calls(messages[-1], [])
+        _append_assistant_notice(messages, "SafeConfirm blocked the tool call after user rejection.")
+        return InterventionOutcome(messages=messages, tool_calls=[], records=records)
 
     def _block_all(
         self,

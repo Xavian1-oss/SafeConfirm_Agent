@@ -41,7 +41,7 @@ class SafeConfirmConfig:
             risk_threshold_confirm=float(raw["risk_threshold_confirm"]),
             risk_threshold_block=float(raw["risk_threshold_block"]),
             never_allow_on_untrusted=bool(raw["never_allow_on_untrusted"]),
-            enable_repair=bool(raw["enable_repair"]),
+            enable_repair=_env_bool("SAFECONFIRM_ENABLE_REPAIR", raw["enable_repair"]),
             max_repair_attempts=int(raw["max_repair_attempts"]),
             registry_path=registry,
             templates_path=templates,
@@ -57,3 +57,10 @@ def _resolve_path(path_str: str) -> Path:
     if path.is_absolute():
         return path
     return PROJECT_ROOT / path
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return bool(default)
+    return value.strip().lower() in {"1", "true", "yes", "on"}
