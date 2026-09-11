@@ -389,3 +389,15 @@ notebooks/plots/
 
 runs/
 .claude
+
+# Overleaf paper project (separate git remote; sync via Overleaf Git)
+6a9fb8173b16b4dea4fd1079/
+
+# LaTeX build artifacts (keep .tex / .pdf)
+*.aux
+*.bbl
+*.blg
+*.out
+*.fdb_latexmk
+*.fls
+*.synctex.gz

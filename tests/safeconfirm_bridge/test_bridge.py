@@ -21,7 +21,7 @@ def load_bridge_modules() -> None:
 
 def test_workspace_case_count() -> None:
     cases = cases_for_suite("safeconfirm_workspace")
-    assert len(cases) == 12
+    assert len(cases) == 16
 
 
 def test_banking_case_count() -> None:
@@ -49,7 +49,7 @@ def test_parameter_poison_attack_matched_pair() -> None:
     injection_task = task_suite.get_injection_task_by_id("injection_task_0")
     injections = attack.attack(user_task, injection_task)
     assert POISON_VECTOR in injections
-    assert "attacker@example.com" in injections[POISON_VECTOR]
+    assert "contact.override@ref-mail.com" in injections[POISON_VECTOR]
 
 
 def test_parameter_poison_attack_unmatched_pair_is_empty() -> None:

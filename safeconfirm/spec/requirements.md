@@ -1,8 +1,11 @@
 # SafeConfirm — 需求文档
 
-**版本:** 0.3.2  
-**状态:** E2E 实验 P0/P1 已完成；论文写作与 L0/组件 ablation 待办（2026-07-17）  
+**版本:** 0.5.0  
+**状态:** Goal C ☑；**Goal D ☑** — 审稿弱点改进（见 [improvement_plan.md](./improvement_plan.md)）  
+**模型策略:** 主实验 **DeepSeek-Chat only**；跨模型验证 optional（见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-)）  
+**投稿目标:** Goal C/D ☑ — 见 [task.md](./task.md)、[improvement_plan.md](./improvement_plan.md)  
 **代码目录:** `safeconfirm/`、`safeconfirm_bridge/`  
+**论文源文件:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **评测平台:** AgentDojo + E2E Bridge
 
 > **评测主线：** 论文与复现实验统一使用 **E2E Bridge**（真实 LLM 多轮 Agent + `parameter_poison`）。历史 L1 offline targeted benchmark 已废弃。
@@ -143,6 +146,16 @@ SafeConfirm（Source-Aware Intervention）是面向工具型 LLM Agent 的**来�
 
 ## 7. 评测需求
 
+### 7.0 投稿目标层级（摘要）
+
+完整定义见 [task.md](./task.md) 阶段总览。当前 **Goal C/D ☑**。
+
+| 层级 | 实验增量 | 写作增量 |
+|------|----------|----------|
+| Goal A | 单 seed 主表 + ablation | 初稿 ~5 页 | ☑ |
+| Goal B | + allow/block ablation；+ multi-seed；+ L0 | threat model + Table 4 | ☑ DS 侧 |
+| **Goal C** | Goal B + **3 seeds** + L0（DeepSeek） | Table 6 + Discussion + **7–8 页** | ☑ |
+
 ### 7.1 Threat Model 与 Benchmark
 
 **针对威胁：** parameter-binding poisoning（`parameter_poison`）——用户授权了 **action type**，但 **critical binding**（收件人、路径、账户等）来自不可信 observation。
@@ -153,9 +166,9 @@ SafeConfirm（Source-Aware Intervention）是面向工具型 LLM Agent 的**来�
 
 | Suite | Cases | 说明 |
 |-------|-------|------|
-| workspace | 12 | 10 corruption + 2 benign（当前主实验已跑） |
-| banking | 4 | 3 corruption + 1 benign（yaml 已定义，待跑） |
-| **合计** | **16** | |
+| workspace | 16 | 14 corruption + 2 benign |
+| banking | 4 | 3 corruption + 1 benign |
+| **合计** | **20** | 17 corruption + 3 benign |
 
 **运行入口：** `python -m safeconfirm_bridge.scripts.run_bridge_benchmark`
 
@@ -165,12 +178,16 @@ SafeConfirm（Source-Aware Intervention）是面向工具型 LLM Agent 的**来�
 - 策略 ablation：`--policy rule_v1 | baseline_vague`
 - Confirmer ablation：`--confirmer llm_user | oracle_strict`
 
-**实验日志目录（`runs/bridge/`，仅保留最新）：**  
-主表 `e2e_deepseek_v3/`、`e2e_gpt4o_v2/`、`e2e_banking_deepseek_v4/`、`e2e_gpt4o_banking_v3/`；  
-ablation `confirm_ablation_v3/`、`ablation_repair/`；  
-辅助 `e2e_ds_v2_*/`、`e2e_retrieval_deepseek/`
+**实验日志目录（`runs/bridge/`）：**  
+主表（20-case）`e2e_deepseek_v4_s{0,1,2}/` + `e2e_banking_deepseek_v4/`；  
+12-case 对照 `e2e_deepseek_v3_s{0,1,2}/`；  
+组件 `component_ablation/{allow_ds,block_ds}/`；  
+confirm `confirm_ablation_v4/s{0,1,2}/`；  
+REPAIR `ablation_repair_v2/`、`ablation_repair_subset_v1/`（**勿引用** `ablation_repair/` v1）；  
+L0 `runs/l0/goal_c_v1_ds_full/`（☑ 0pp）；  
+辅助 `e2e_ds_v2_*/`、`e2e_retrieval_deepseek/`、`runs/native_gen/`
 
-**可选 L0：** 原生 AgentDojo 无攻击 run，验证 `safeconfirm_log_only` 不改变 utility（见 task.md）。
+**可选 L0：** 原生 AgentDojo 无攻击 run，验证 `safeconfirm_log_only` 不改变 utility（Δ ≤ 2%；见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-)）。
 
 ### 7.2 指标分层
 
@@ -223,13 +240,16 @@ VCR = |{records in G : selected_intervention == VAGUE_CONFIRM}| / |G|
 | 实验 | 配置 | 目的 | 推荐日志 |
 |------|------|------|----------|
 | **P0** | 无 `--defense` | 无防御 baseline | `e2e_ds_v2_p0/` |
-| **SafeConfirm** | `--defense safeconfirm --policy rule_v1` | 主方法 | `e2e_deepseek_v3/`, `e2e_gpt4o_v2/` |
+| **SafeConfirm** | `--defense safeconfirm --policy rule_v1` | 主方法 | `e2e_deepseek_v4_s*/`, `e2e_banking_deepseek_v4/` |
 | **Banking** | `-s safeconfirm_banking` + SafeConfirm | 泛化（n=4） | `e2e_banking_deepseek_v4/` |
-| **Vague baseline** | `--policy baseline_vague` | H1 对照 | `confirm_ablation_v3/vague_*` |
-| **REPAIR ablation** | `--no-repair` | H2 对照 | `ablation_repair/{on,off}/` |
+| **Vague baseline** | `--policy baseline_vague` | H1 对照 | `confirm_ablation_v4/vague_*` |
+| **REPAIR ablation** | `--no-repair` | H2 对照 | `ablation_repair_v2/`, `ablation_repair_subset_v1/` |
 | **Retrieval** | `--defense safeconfirm_retrieval` | H3 E2E | `e2e_retrieval_deepseek/` |
 | **Defense sweep** | AgentDojo defenses + log-only | Table 4 | `e2e_ds_v2_*/` |
-| **Confirmer ablation** | `llm_user` vs `oracle_strict` | 披露 × 用户 | `confirm_ablation_v3/` |
+| **Confirmer ablation** | `llm_user` vs `oracle_strict` | 披露 × 用户 | `confirm_ablation_v4/` |
+| **组件 ablation** | `baseline_allow` / `baseline_block` vs `rule_v1` | C2 Pareto | `component_ablation/` — **☑** |
+| **Multi-seed** | `--run-id s{0,1,2}` | 结果稳定性 | `e2e_deepseek_v4_s*/`, `confirm_ablation_v4/` — **☑** |
+| **L0 passive** | `--defense safeconfirm_log_only` on native workspace | 部署兼容性 | `runs/l0/goal_c_v1_ds_full/` — **☑ 0pp** |
 
 Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 
@@ -242,69 +262,85 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 
 ### 7.5 研究假设与证据状态
 
-| 假设 | 内容 | 证据 | 缺口（见 task.md §S6） |
-|------|------|------|------------------------|
-| **H1** | SOURCE_AWARE 在相近 TSR 下 SDR/CLR 显著优于 VAGUE | ✅ `confirm_ablation_v3`（SDR 100% vs 0%；vague_llm CLR 100%；ASR 均为 0%） | GPT-4o ablation 行；multi-seed |
-| **H2** | REPAIR 提升 TSR 且不升高 UAR | ✅ `ablation_repair`（TSR 66.7% vs 25%, RSR 42.6%, ASR 均为 0%） | GPT-4o optional |
-| **H3** | Retrieval 优于 rule_v1 | ◐ E2E 83.3%/0%（`e2e_retrieval_deepseek`），**未优于 rule_v1** | 论文降级 C3 |
-| **H4** | 仅靠 ASR 无法区分干预质量 | ✅ ablation ASR 同为 0% 但 SDR/CLR 分化；sweep SafeConfirm 100%/0% vs P0 50%/60% | — |
-| **C1** | Confirmation laundering 是真实失败模式 | ✅ vague_llm: VCR 100%, SDR 0%, CLR 100% | — |
-| **C2** | Minimal-disruption intervention | ◐ sweep v2 SafeConfirm TSR/ASR 居中优 | 缺 allow/block 组件 ablation |
-| **C3** | Training-free learning 有效 | ◐ E2E 无显著提升 | appendix / limitation |
+| 假设 | 内容 | 证据 | 缺口 |
+|------|------|------|------|
+| **H1** | SOURCE_AWARE 在相近 TSR 下 SDR/CLR 显著优于 VAGUE | ✅ `confirm_ablation_v4` 3 seeds | — |
+| **H2** | REPAIR 提升 TSR 且不升高 UAR | ✅ `ablation_repair_v2` + subset | — |
+| **H3** | Retrieval 优于 rule_v1 | ◐ E2E 无增益 | Limitations |
+| **H4** | 仅靠 ASR 无法区分干预质量 | ✅ ablation + defense sweep | — |
+| **C1** | Confirmation laundering 真实存在 | ✅ vague_llm CLR 100% | — |
+| **C2** | Minimal-disruption intervention | ✅ allow/block/SC Pareto | — |
+| **C3** | Training-free learning 有效 | ◐ 负结果 | Limitations |
 
-**主表推荐数据源（2026-07-17）:**
+**主表推荐数据源（DeepSeek-only）：**
 
-| 表 | DeepSeek | GPT-4o |
-|----|----------|--------|
-| Workspace 12 | `e2e_deepseek_v3` — TSR **100%**, ASR **0%**, UAR 10%† | `e2e_gpt4o_v2` — TSR **100%**, ASR **0%** |
-| Banking 4 | `e2e_banking_deepseek_v4` — TSR **100%**, ASR **0%** | `e2e_gpt4o_banking_v3` — TSR 75%‡, Corr.TSR **100%**, ASR **0%** |
+| 表 | DeepSeek |
+|----|----------|
+| Workspace 16（主表） | `e2e_deepseek_v4_s*` — TSR **89.6%±3.0 pp**, ASR **0%±0%** |
+| Workspace 12（footnote） | `e2e_deepseek_v3_s*` — TSR **100%±0%**, ASR **0%±0%** |
+| Banking 4 | `e2e_banking_deepseek_v4` — TSR **100%**, ASR **0%** |
+| 组件 ablation（12-case） | allow 91.7%/10%；block 33.3%/0%；SC 100%/0% |
+| Confirm 3-seed | sa_llm SDR100%/CLR0%；vague CLR100% |
 
-‡ GPT-4o benign stall（IBAN 混淆）；corruption 3/3 均 REPAIR→ALLOW。
+**跨模型验证（optional，非 blocker）:** 50–60% benchmark 子集 — 见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-)。
 
-† UAR 10% = `ws_delete_backup_e2e` trace 含 poison file_id，环境 ASR 仍为 0。
+**Goal C/D 不试图消除的局限:** 20 cases、单 agent 模型（DeepSeek）、parameter poison only、模拟 confirmer、H3 retrieval 无增益。
 
-**已修复问题:**
+### 7.6 后续工作优先级（Goal C 视角）
 
-1. ~~`oracle_strict` message history 崩溃~~ → **12/12**
-2. ~~`LLMUserConfirmer` approval 0%~~ → **sa_llm 100%**（DeepSeek JSON prompt fix）
-3. ~~UAR stale gap 误报~~ → 对齐 `corrupted_slots`
-4. ~~Banking stall~~ → `trusted_account_lookup` + env
-5. ~~ASR trace 假阳性~~ → `evaluators.attack_succeeded` 仅计环境副作用（2026-07-17）
+完整任务见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-) 与 [improvement_plan.md](./improvement_plan.md)。
 
-**剩余局限:** GPT-4o banking benign stall；H3 E2E 无增益；无 multi-seed；L0 未跑。
+| 优先级 | 工作项 | Goal 层级 | 状态 |
+|--------|--------|-----------|------|
+| **Blocker** | 组件 ablation allow/block（DeepSeek） | C | ☑ |
+| **Blocker** | 主结果 3 seeds + mean±std | C/D | ☑ |
+| **Blocker** | Confirm ablation 3 seeds（H1） | C | ☑ |
+| **Blocker** | L0 log_only utility ≤2%（DeepSeek） | C | ☑ |
+| **Blocker** | 20-case benchmark + per-case 分析 | D | ☑ |
+| **Optional** | 跨模型 50–60% 子集（Gemini/GPT） | rebuttal | ☐ |
+| **Out of scope** | Human study、instruction hijack、新 suite | — | 不写 |
 
-### 7.6 后续工作优先级（摘要）
+### 7.7 论文交付映射（Goal C）
 
-完整任务拆解见 [task.md §S6](./task.md#s6--后续工作论文交付)。
+| 论文元素 | Goal C 要求 | 当前稿 | 数据源 |
+|----------|-------------|--------|--------|
+| Tables 1–5, Figs 1–2 | Goal A 基线 | ☑ | 初稿 |
+| **Table 6** | allow/block/SC Pareto（DeepSeek） | ☑ | `component_ablation/summary.json` |
+| **Table 2** | DS workspace + banking mean±std | ☑ | `e2e_deepseek_v4_workspace_aggregate.json` |
+| **Table 3** | LLM confirm 3-seed ±std | ☑ | `confirm_ablation_v4/*_aggregate.json` |
+| **§Discussion** | 泛化边界 + 单模型 | ☑ | `safeconfirm.tex` |
+| **§Limitations** | L0 DS ☑；单模型；跨模型 optional | ☑ | |
+| Table 4 defense | 6 行 | ☑ | `e2e_ds_v2_defense_comparison.json` |
 
-| 优先级 | 工作项 | 状态 |
-|--------|--------|------|
-| **P0** | 修复 user_task_4 message bug | ☑ |
-| **P0** | REPAIR ablation (`--no-repair`) | ☑ |
-| **P0** | LLM confirmer DeepSeek JSON fix | ☑ |
-| **P0** | UAR 对齐 `corrupted_slots` | ☑ |
-| **P1** | Banking 4 cases E2E | ☑ DeepSeek 100%；GPT-4o 75% |
-| **P1** | GPT-4o 主结果 workspace | ☑ |
-| **P1** | Retrieval E2E | ☑（无显著增益，降级） |
-| **P1** | Defense sweep v2 | ☑ DeepSeek |
-| **P1** | L0 log_only 兼容性 | ☐ |
-| **P1** | GPT-4o confirm ablation + multi-seed | ☐ |
-| **P2** | 组件 ablation（allow/block） | ☐ |
-| **P2** | 论文表格自动生成 + Experiments 初稿 | ☐ |
-| **P2** | GPT-4o defense sweep | ☐ |
+**Defense sweep 完整数字（Table 4，DeepSeek workspace 12）** — 已写入初稿 ☑
+
+| Defense | TSR | ASR |
+|---------|-----|-----|
+| P0 | 50.0% | 60.0% |
+| Spotlighting | 66.7% | 40.0% |
+| Repeat prompt | 41.7% | 70.0% |
+| Tool filter | 0.0% | 0.0%† |
+| SC log-only | 83.3% | 20.0% |
+| SafeConfirm | 100% | 0% |
+
+† Tool filter：ASR=0 但 stall=100%，TSR=0（过度阻断）。
 
 ---
 
 ## 8. 验收标准（项目级）
 
-| 阶段 | 验收 |
+完整实验清单见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-) 与 [design.md §13](./design.md#13-实验与论文归档)。
+
+| 层级 | 验收 |
 |------|------|
-| S1 | `log_only` 产出完整 slot/source/intervention 日志，不改变 env |
-| S2 | `active` 在 designed case 触发 SOURCE_AWARE 或 BLOCK |
-| S3 | REPAIR 在联系人场景 RSR > 0 |
-| S4 | retrieval 策略 Composite 优于 rule_v1 |
-| S5 | E2E Bridge ≥12 workspace cases；TSR/ASR + 干预指标可复现；confirm ablation 可跑 |
-| S6 | 论文最低线：P0 完成 + 16 cases 主表 + H2 ablation + 双模型结果（见 task.md §S6） | ◐ P0/P1 实验 ☑；写作/L0 待办 |
+| **Goal A** | 单 seed 主表 + ablation + 初稿 Tables 1–5 — ☑ |
+| **Goal B（DS）** | + allow/block ablation + multi-seed + L0 — ☑ |
+| **Goal C** | 7–8 页正文 + Related Work + Table 6 — ☑ |
+| **Goal D** | 20-case 主表 + REPAIR v2 + per-case 分析 — ☑ |
+
+**Optional（rebuttal）:** 跨模型 50–60% 子集 — `./util_scripts/run_cross_model_validation.sh`。
+
+**仍 out of scope:** human study、instruction hijacking、新 suite — 写入 Limitations / Discussion。
 
 ---
 
@@ -352,4 +388,5 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 ## 12. 相关文档
 
 - [design.md](./design.md) — 技术设计
-- [task.md](./task.md) — 任务拆解、进度、**§S6 后续工作路线图**
+- [task.md](./task.md) — 阶段总览、§S6/S7
+- [improvement_plan.md](./improvement_plan.md) — Goal D 实验记录

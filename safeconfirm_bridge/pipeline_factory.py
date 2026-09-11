@@ -7,6 +7,14 @@ from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExe
 from agentdojo.models import MODEL_PROVIDERS, ModelsEnum
 
 
+def _apply_temperature(pipeline: BasePipelineElement, temperature: float | None) -> None:
+    if temperature is None:
+        return
+    for element in pipeline.elements:
+        if hasattr(element, "temperature"):
+            element.temperature = temperature
+
+
 def build_bridge_pipeline(
     model: ModelsEnum,
     defense: str | None,
@@ -15,9 +23,10 @@ def build_bridge_pipeline(
     confirmer: str | None = None,
     confirmer_model: str | None = None,
     enable_repair: bool | None = None,
+    temperature: float | None = None,
 ) -> BasePipelineElement:
     if defense not in ("safeconfirm", "safeconfirm_log_only", "safeconfirm_retrieval"):
-        return AgentPipeline.from_config(
+        pipeline = AgentPipeline.from_config(
             PipelineConfig(
                 llm=model,
                 model_id=None,
@@ -26,10 +35,14 @@ def build_bridge_pipeline(
                 system_message="You are a helpful assistant.",
             )
         )
+        _apply_temperature(pipeline, temperature)
+        return pipeline
 
     from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 
     llm = get_llm(MODEL_PROVIDERS[ModelsEnum(model)], model, None, "tool")
+    if temperature is not None and hasattr(llm, "temperature"):
+        llm.temperature = temperature
     llm_name = str(model)
 
     resolved_policy = policy_backend

@@ -1,12 +1,23 @@
 #!/usr/bin/env bash
+# AgentDojo defense sweep on the 12-case workspace subset (Appendix Table tab:defense).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# shellcheck source=benchmark_subsets.sh
+source "$(dirname "$0")/benchmark_subsets.sh"
 
-PYTHON="${PYTHON:-.venv/bin/python}"
+if [[ -n "${PYTHON:-}" ]]; then
+  read -r -a PYTHON_CMD <<< "${PYTHON}"
+else
+  PYTHON_CMD=(uv run python)
+fi
 SUITE="safeconfirm_workspace"
 MODEL="deepseek-chat"
 ATTACK="parameter_poison"
-LOGROOT="runs/bridge/e2e_ds_v2"
+LOGROOT="${LOGROOT:-runs/bridge/e2e_ds_v2}"
+COMPARE_OUTPUT="${COMPARE_OUTPUT:-runs/bridge/e2e_ds_v2_defense_comparison.json}"
+SUBSET="${SUBSET:-12}"
+
+load_workspace_subset_args "${SUBSET}"
 
 run_one() {
   local name="$1"
@@ -15,14 +26,14 @@ run_one() {
   local logdir="${LOGROOT}_${name}"
   echo "========== ${name} (defense=${defense:-none}) =========="
   if [[ -z "${defense}" ]]; then
-    "${PYTHON}" -m safeconfirm_bridge.scripts.run_bridge_benchmark \
+    "${PYTHON_CMD[@]}" -m safeconfirm_bridge.scripts.run_bridge_benchmark \
       -s "${SUITE}" -m "${MODEL}" -a "${ATTACK}" \
-      --logdir "${logdir}" "$@"
+      --logdir "${logdir}" "${SUBSET_ARGS[@]+"${SUBSET_ARGS[@]}"}" "$@"
   else
-    "${PYTHON}" -m safeconfirm_bridge.scripts.run_bridge_benchmark \
+    "${PYTHON_CMD[@]}" -m safeconfirm_bridge.scripts.run_bridge_benchmark \
       -s "${SUITE}" -m "${MODEL}" -a "${ATTACK}" \
       --defense "${defense}" \
-      --logdir "${logdir}" "$@"
+      --logdir "${logdir}" "${SUBSET_ARGS[@]+"${SUBSET_ARGS[@]}"}" "$@"
   fi
 }
 
@@ -30,7 +41,7 @@ run_one p0 ""
 run_one spotlighting spotlighting_with_delimiting
 run_one repeat repeat_user_prompt
 run_one tool_filter tool_filter
-if "${PYTHON}" -c "import torch, transformers" 2>/dev/null; then
+if "${PYTHON_CMD[@]}" -c "import torch, transformers" 2>/dev/null; then
   run_one pi_detector transformers_pi_detector
 else
   echo "Skipping PI detector (install: pip install 'agentdojo[transformers]')"
@@ -51,6 +62,6 @@ fi
 COMPARE_ARGS+=(
   --run "SC log-only:${LOGROOT}_log_only/safeconfirm_workspace"
   --run "SafeConfirm:${LOGROOT}_safeconfirm/safeconfirm_workspace"
-  --output runs/bridge/e2e_ds_v2_defense_comparison.json
+  --output "${COMPARE_OUTPUT}"
 )
-"${PYTHON}" -m safeconfirm_bridge.scripts.compare_defenses "${COMPARE_ARGS[@]}"
+"${PYTHON_CMD[@]}" -m safeconfirm_bridge.scripts.compare_defenses "${COMPARE_ARGS[@]}"

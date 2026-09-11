@@ -71,6 +71,7 @@ class RepairEngine:
             role_label,
             tool_call,
             role_slot,
+            extra_args,
         )
         if trusted_email is None:
             return RepairOutcome(success=False, reason="contact_not_found")
@@ -133,6 +134,21 @@ def _format_slot_value(current_value: object, trusted_email: str) -> FunctionCal
     return trusted_email
 
 
+def _lookup_trusted_contact_from_extra(extra_args: dict | None, role_label: str) -> str | None:
+    if not extra_args:
+        return None
+    trusted_contacts = extra_args.get("safeconfirm", {}).get("trusted_contacts") or {}
+    if not isinstance(trusted_contacts, dict):
+        return None
+    normalized = role_label.lower()
+    if normalized in trusted_contacts:
+        return str(trusted_contacts[normalized])
+    for key, value in trusted_contacts.items():
+        if str(key).lower() == normalized:
+            return str(value)
+    return None
+
+
 def _lookup_contact_email(
     runtime: FunctionsRuntime,
     env: TaskEnvironment,
@@ -140,7 +156,14 @@ def _lookup_contact_email(
     role_label: str,
     tool_call: FunctionCall,
     role_slot: str,
+    extra_args: dict | None = None,
 ) -> str | None:
+    trusted_from_extra = _lookup_trusted_contact_from_extra(extra_args, role_label)
+    if trusted_from_extra is not None:
+        excluded_values = _current_slot_values(tool_call, role_slot)
+        if trusted_from_extra.lower() not in excluded_values:
+            return trusted_from_extra
+
     contacts, error = runtime.run_function(env, lookup_tool, {"query": role_label})
     if error or not isinstance(contacts, list) or not contacts:
         return None

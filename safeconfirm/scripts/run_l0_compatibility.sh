@@ -8,11 +8,11 @@ cd "$ROOT"
 if [[ ! -f .env ]]; then
   echo "Missing .env — copy from template first:"
   echo "  cp .env.example .env"
-  echo "Then set OPENAI_API_KEY in .env"
+  echo "Then set DEEPSEEK_API_KEY or OPENAI_API_KEY in .env"
   exit 1
 fi
 
-MODEL="${L0_MODEL:-GPT_4O_MINI_2024_07_18}"
+MODEL="${L0_MODEL:-deepseek-chat}"
 SUITE="${L0_SUITE:-workspace}"
 BENCH_VERSION="${L0_BENCH_VERSION:-v1.2.2}"
 LOGROOT="${L0_LOGROOT:-runs/l0}"

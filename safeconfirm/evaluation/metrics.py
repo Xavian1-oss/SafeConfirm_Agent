@@ -220,23 +220,6 @@ def compute_metrics(
     )
 
 
-def load_targeted_runs(logdir: Path) -> list[TargetedRunResultModel]:
-    runs: list[TargetedRunResultModel] = []
-    for path in sorted(logdir.rglob("*.json")):
-        with path.open() as handle:
-            raw = json.load(handle)
-        if "safeconfirm" not in raw:
-            continue
-        runs.append(TargetedRunResultModel.model_validate(raw))
-    return runs
-
-
-def save_targeted_run(path: Path, run: TargetedRunResultModel) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w") as handle:
-        json.dump(run.model_dump(mode="json"), handle, indent=2)
-
-
 def merge_safeconfirm_into_benchmark_log(log_path: Path, safeconfirm_payload: dict) -> None:
     with log_path.open() as handle:
         raw = json.load(handle)

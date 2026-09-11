@@ -1,7 +1,9 @@
 # SafeConfirm — 设计文档
 
-**版本:** 0.3.2  
-**依赖:** [requirements.md](./requirements.md)
+**版本:** 0.4.3  
+**依赖:** [requirements.md](./requirements.md)  
+**投稿目标:** Goal C/D ☑ — 见 [task.md](./task.md)、[improvement_plan.md](./improvement_plan.md)  
+**实验状态:** DeepSeek-only；主表 20-case（`e2e_deepseek_v4_s*`）
 
 ---
 
@@ -42,7 +44,7 @@ DEFENSES += ["safeconfirm", "safeconfirm_log_only"]
 ```bash
 python -m agentdojo.scripts.benchmark \
   --defense safeconfirm_log_only \
-  -s workspace --model GPT_4O_MINI_2024_07_18
+  -s workspace --model deepseek-chat
 ```
 
 ### 2.2 信任边界
@@ -172,27 +174,27 @@ safeconfirm_bridge/
 ```bash
 # P0 baseline（无 defense）
 python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
-  -s safeconfirm_workspace -m GPT_4O_2024_05_13 \
-  --logdir runs/bridge/e2e_p0
+  -s safeconfirm_workspace -m deepseek-chat \
+  --logdir runs/bridge/e2e_ds_v2_p0
 
 # SafeConfirm 主方法
 python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
-  -s safeconfirm_workspace -m GPT_4O_2024_05_13 \
+  -s safeconfirm_workspace -m deepseek-chat \
   --defense safeconfirm --policy rule_v1 \
-  --logdir runs/bridge/e2e_gpt4o
+  --logdir runs/bridge/e2e_deepseek_v3_s0
 
 # Vague baseline ablation
 python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
   -s safeconfirm_workspace -m deepseek-chat \
   --defense safeconfirm --policy baseline_vague \
-  --logdir runs/bridge/confirm_ablation_v3/vague_llm
+  --logdir runs/bridge/confirm_ablation_v4/vague_llm
 
 # Oracle confirmer ablation（上界对照）
 python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
   -s safeconfirm_workspace -m deepseek-chat \
   --defense safeconfirm --policy rule_v1 \
   --confirmer oracle_strict \
-  --logdir runs/bridge/confirm_ablation_v3/sa_oracle
+  --logdir runs/bridge/confirm_ablation_v4/sa_oracle
 ```
 
 **CLI 参数:**
@@ -200,12 +202,12 @@ python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
 | 参数 | 默认 | 说明 |
 |------|------|------|
 | `-s` / `--suite` | 必填 | `safeconfirm_workspace` / `safeconfirm_banking` |
-| `-m` / `--model` | GPT_4O_2024_05_13 | Agent LLM |
+| `-m` / `--model` | deepseek-chat | Agent LLM（主实验） |
 | `-a` / `--attack` | `parameter_poison` | 攻击类型 |
 | `-d` / `--defense` | None | `safeconfirm` / `safeconfirm_log_only` / AgentDojo defense |
 | `--policy` | None | `rule_v1` / `baseline_vague` |
 | `--confirmer` | `llm_user` | `llm_user` / `oracle_strict` |
-| `--confirmer-model` | gpt-4o-mini | LLMUserConfirmer 所用模型 |
+| `--confirmer-model` | deepseek-chat | LLMUserConfirmer 所用模型（与 agent 一致，主实验） |
 | `--logdir` | `runs/bridge` | 日志根目录 |
 
 **Suite 命名:** 必须使用 `safeconfirm_workspace`（非原生 `workspace`），以加载 E2E case 环境与 poison 注入。
@@ -514,6 +516,10 @@ def is_confirmation_laundering(
 
 ## 7. 工具注册表（`tool_slot_registry.yaml`）
 
+**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（20 case 目标工具均已注册）。
+
+**未注册工具（当前实现）：** `SafeConfirmPipeline.analyze_tool_call` 在 `get_tool_entry` 返回 `None` 时直接 `ALLOW`（无 slot 分析）。与 NF5 fail-closed 目标存在差距；Limitations 已披露。
+
 ```yaml
 version: "0.2.0"
 suites:
@@ -611,13 +617,23 @@ simulated_confirmer: llm_user
 
 Bridge CLI 可覆盖: `--policy`, `--confirmer`, `--confirmer-model`（经 `pipeline_factory.build_bridge_pipeline` 传入 `SafeConfirmIntervention`）。
 
-**计划新增 CLI（S6，见 task.md §6.2）:**
+**计划新增 CLI（S6 Goal C，见 task.md §6.4）:**
 
-| 参数 | 用途 |
-|------|------|
-| `--no-repair` | H2 ablation：`enable_repair=false` |
-| `--policy retrieval` | H3 E2E：启用 retrieval_policy |
-| `--seed` / `--run-id` | multi-seed 重复实验（待实现） |
+| 参数 | 用途 | 状态 |
+|------|------|------|
+| `--no-repair` | H2 ablation：`enable_repair=false` | ☑ |
+| `--policy retrieval` | H3 E2E：启用 retrieval_policy | ☑ |
+| `--run-id` | multi-seed 标识；写入 `metrics.json` 的 `run_id` | ☑ |
+| `--seed` | 可选；与 `--run-id` 配合，写入 `metrics.json` | ☑ |
+
+**Multi-seed 目录约定:**
+
+```
+runs/bridge/{experiment}_s{0,1,2}/metrics.json
+runs/bridge/confirm_ablation_v4/s{0,1,2}/{sa_llm,vague_llm,...}/
+```
+
+聚合：`util_scripts/aggregate_seed_metrics.py` → `{metric}_mean`, `{metric}_std` JSON。
 
 ---
 
@@ -655,7 +671,7 @@ cases:
     benign: false
 ```
 
-**规模:** workspace 12 cases（10 corruption + 2 benign）+ banking 4 cases = **16 total**。
+**规模:** workspace 16 cases（14 corruption + 2 benign）+ banking 4 cases（3 corruption + 1 benign）= **20 total**（17 corruption + 3 benign）。
 
 **E2E 特有字段 `e2e`:** 定义 poison email、source emails、required observation；由 `safeconfirm_bridge/environment.py` 在 task 启动时注入 env。
 
@@ -663,7 +679,19 @@ cases:
 
 **Ablation 脚本:** `util_scripts/run_confirm_ablation.sh`（4-row: policy × confirmer）；`util_scripts/compare_confirm_ablation.py` 汇总对比。
 
-**计划脚本（S6）:** `util_scripts/run_repair_ablation.sh`、`util_scripts/export_paper_tables.py`（见 task.md §6.2、§6.9）。
+**计划脚本（S6 Goal C）:**
+
+| 脚本 | 输入 | 输出 |
+|------|------|------|
+| `util_scripts/run_confirm_ablation.sh` | workspace 12 | 4-row metrics | ☑ v4 |
+| `util_scripts/compare_confirm_ablation.py` | ablation logdirs | SDR/CLR 对比 JSON | ☑ |
+| `util_scripts/run_repair_ablation.sh` | workspace 12 | on/off metrics | ☑ |
+| `util_scripts/aggregate_seed_metrics.py` | `*_s{0,1,2}/metrics.json` | mean±std JSON | ☑ |
+| `util_scripts/compare_component_ablation.py` | `component_ablation/` | Table 6 JSON | ☑ |
+| `util_scripts/run_component_ablation.sh` | workspace 12 | DS allow/block | ☑ |
+| `util_scripts/run_goal_c_multiseed.sh` | 3 seeds | E1 + E6 | ☑ |
+| `util_scripts/run_cross_model_validation.sh` | 50–60% subset | optional Gemini/GPT | optional |
+| `util_scripts/run_goal_c_all.sh` | DeepSeek 全流程 | 一键复现 | ☑ |
 
 ---
 
@@ -698,52 +726,49 @@ tests/safeconfirm_bridge/
 
 ---
 
-## 13. 后续实现项（S6 设计补充）
+## 13. 实验与论文归档
 
-与 [task.md §S6](./task.md#s6--后续工作论文交付) 对齐的技术项：
+与 [task.md §6](./task.md#s6--goal-c-实验与论文交付已完成-)、[improvement_plan.md](./improvement_plan.md) 对齐。S1–S5 核心实现已完成；细节见代码与 `tests/`。
 
-### 13.1 `--no-repair` CLI — ☑ 已实现
+**论文源文件:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`
 
-- `pipeline_factory.build_bridge_pipeline(..., enable_repair: bool | None)`
-- Bridge CLI `--no-repair`；`SAFECONFIRM_ENABLE_REPAIR` env
-- 实验：`runs/bridge/ablation_repair/{on,off}/`
+### 13.1 论文–日志映射
 
-### 13.2 Confirmer prompt 迭代 — ☑ 部分完成
+| 论文元素 | 数据源 | 脚本 |
+|----------|--------|------|
+| Table 2（20-case 主表） | `e2e_deepseek_v4_s{0,1,2}/` + `e2e_banking_deepseek_v4/` | `aggregate_seed_metrics.py` |
+| Table 2 footnote（12-case） | `e2e_deepseek_v3_s{0,1,2}/` | 同上 |
+| Table 3 | `confirm_ablation_v4/s{0,1,2}/` | `aggregate_seed_metrics.py` |
+| Table 4 | `e2e_ds_v2_defense_comparison.json` | `compare_defenses.py` |
+| Table 5 | `ablation_repair_v2/` + `ablation_repair_subset_v1/` | `run_repair_ablation.sh`, `run_repair_subset_ablation.sh` |
+| Table 6 | `component_ablation/{allow_ds,block_ds}/` + v3 SC | `compare_component_ablation.py` |
+| Appendix per-case | `e2e_deepseek_v4_s0/.../per_case_summary.json` | `analyze_per_case.py`, `export_per_case_appendix.py` |
+| L0 | `runs/l0/goal_c_v1_ds_full/` | `run_l0_compatibility.sh` |
 
-- [x] DeepSeek JSON prompt fix（`llm_user_confirmer.py`）
-- [x] `StrictOracleConfirmer` ablation 支持
-- [ ] REPAIR 成功后 confirm 文案标注「已解析为 trusted contact: X」（可选增强）
+### 13.2 日志根目录（DeepSeek-only）
 
-### 13.3 Message 序列修复 — ☑ 已实现
+```
+runs/bridge/
+  e2e_deepseek_v4_s{0,1,2}/          # Goal D 主结果（16 ws, 3 seeds）
+  e2e_deepseek_v3_s{0,1,2}/          # Goal C 12-case 对照
+  e2e_banking_deepseek_v4/
+  component_ablation/allow_ds/ block_ds/
+  confirm_ablation_v4/s{0,1,2}/
+  ablation_repair_v2/{on,off}/         # Table 5（勿引用 v1 ablation_repair/）
+  ablation_repair_subset_v1/{on,off}/
+  e2e_ds_v2_*/                         # defense sweep
+runs/l0/goal_c_v1_ds_full/
+runs/native_gen/ds_v1_smoke/
+```
 
-- [x] confirm 后 pop synthetic user；approve 恢复 tool_calls；reject 追加 refusal
-- [x] `test_confirm_message_history.py`
+**Bridge CLI 扩展（`run_bridge_benchmark.py`）:** `--run-id`, `--seed`, `--no-repair`, `baseline_allow`, `baseline_block`, `--defense safeconfirm_retrieval`
 
-### 13.4 UAR E2E 对齐 — ☑ 已实现
-
-- E2E case 有 `corrupted_slots` 时，`executed_with_untrusted_binding` 以 poison 值匹配为准
-- 实现：`safeconfirm/evaluation/metrics.py`；测试：`test_metrics.py`
-
-### 13.5 Banking REPAIR — ☑ 已实现
-
-- `trusted_account_lookup` 策略：从 `notes.txt` / reference 文件解析 trusted account
-- Registry：`banking.send_money.repair`；env：`environment.py::_prepare_banking`
-
-### 13.6 Utility / REPAIR 边缘修复 — ☑ 已实现
-
-- `evaluators.py`：`send_email` body 子串匹配（转发场景）
-- `repair_engine.py`：移除 share_file `permission_cap` 自动降级
-- Runner：`policy_backend` 从 defense 推断；`e2e_metrics` 无 defense 显示 `none`
-
-### 13.7 论文结果导出 — ☐ 待实现
-
-- 输入：`runs/bridge/**/metrics.json`
-- 输出：Markdown / LaTeX 表格（Table 2–5 模板）
-- 脚本：`util_scripts/export_paper_tables.py`（待建）
+**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（20 case 目标工具均已注册）。
 
 ---
 
 ## 14. 相关文档
 
-- [requirements.md](./requirements.md) — 需求、假设证据状态（§7.5–7.6）
-- [task.md](./task.md) — 实现任务、**§S6 后续工作路线图**
+- [requirements.md](./requirements.md) — 需求、假设证据（§7.5–7.7）、验收（§8）
+- [task.md](./task.md) — 阶段总览、§S6 归档、§S7 Goal D
+- [improvement_plan.md](./improvement_plan.md) — Goal D 弱点响应与实验记录

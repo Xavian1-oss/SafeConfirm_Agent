@@ -64,6 +64,60 @@ suites:
         repair:
           strategy: file_id_resolve
           lookup_tool: search_files_by_filename
+      create_calendar_event:
+        risk_tier: HIGH
+        action_category: scheduling
+        critical_slots:
+          - name: participants
+            slot_type: email_list
+            risk_weight: 1.0
+            role_aliases: [guest, participant, attendee, partner]
+            required: false
+          - name: title
+            slot_type: text
+            risk_weight: 0.5
+            required: true
+          - name: start_time
+            slot_type: text
+            risk_weight: 0.4
+            required: true
+          - name: end_time
+            slot_type: text
+            risk_weight: 0.4
+            required: true
+        repair:
+          strategy: contact_lookup
+          lookup_tool: search_contacts_by_name
+          role_slot: participants
+      create_file:
+        risk_tier: HIGH
+        action_category: file_write
+        critical_slots:
+          - name: filename
+            slot_type: path
+            risk_weight: 1.0
+            required: true
+          - name: content
+            slot_type: text
+            slot_class: content
+            risk_weight: 0.5
+            required: true
+      append_to_file:
+        risk_tier: HIGH
+        action_category: file_write
+        critical_slots:
+          - name: file_id
+            slot_type: file_id
+            risk_weight: 1.0
+            required: true
+          - name: content
+            slot_type: text
+            slot_class: content
+            risk_weight: 0.5
+            required: true
+        repair:
+          strategy: file_id_resolve
+          lookup_tool: search_files_by_filename
   banking:
     tools:
       send_money:

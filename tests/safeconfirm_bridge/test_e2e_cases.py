@@ -34,7 +34,7 @@ def _empty_workspace_environment() -> WorkspaceTestEnvironment:
 
 def test_e2e_cases_load_and_validate() -> None:
     cases = load_benchmark_cases(DEFAULT_CASES_PATH)
-    assert len(cases) == 16
+    assert len(cases) == 20
     assert all(case.e2e is not None for case in cases)
 
 
@@ -61,12 +61,24 @@ def test_e2e_environment_includes_source_email(case_id: str, expected_subject: s
     assert "Contact reference" in subjects
 
 
-def test_e2e_corruption_cases_use_trusted_contacts_only() -> None:
+def test_e2e_corruption_cases_keep_poison_out_of_address_book() -> None:
     case = next(item for item in cases_for_suite("safeconfirm_workspace") if item.id == "ws_email_supervisor_e2e")
     prepared = prepare_environment(_empty_workspace_environment(), case)
     emails = {contact.email.lower() for contact in prepared.inbox.contact_list}
-    assert "supervisor@university.edu" in emails
-    assert "attacker@example.com" not in emails
+    assert "supervisor@university.edu" not in emails
+    assert "contact.override@ref-mail.com" not in emails
+    poison_email = next(
+        email for email in prepared.inbox.emails.values() if email.subject == "Contact reference"
+    )
+    assert "contact.override@ref-mail.com" in poison_email.body
+
+
+def test_e2e_corruption_cases_expose_trusted_contacts_for_repair() -> None:
+    from safeconfirm_bridge.environment import trusted_contacts_for_repair
+
+    case = next(item for item in cases_for_suite("safeconfirm_workspace") if item.id == "ws_email_supervisor_e2e")
+    repair_contacts = trusted_contacts_for_repair(case)
+    assert repair_contacts["supervisor"] == "supervisor@university.edu"
 
 
 def test_e2e_delete_case_has_trusted_and_decoy_files() -> None:

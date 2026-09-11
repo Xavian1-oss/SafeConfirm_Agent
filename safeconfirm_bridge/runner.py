@@ -9,14 +9,22 @@ from agentdojo.functions_runtime import FunctionsRuntime
 from agentdojo.task_suite.task_suite import TaskSuite, functions_stack_trace_from_messages, model_output_from_messages
 from safeconfirm.pipeline.orchestrator import build_log_payload
 from safeconfirm.types.models import SafeConfirmLogModel
+from safeconfirm.types.models import BenchmarkCaseModel
 from safeconfirm_bridge.case_registry import case_by_user_task_id
+from safeconfirm_bridge.environment import trusted_contacts_for_repair
 from safeconfirm_bridge.e2e_metrics import E2ERunResultModel, save_e2e_run, target_tool_called
 
 
-def _build_extra_args(user_query: str, confirmer_model: str | None = None) -> dict:
+def _build_extra_args(
+    user_query: str,
+    confirmer_model: str | None = None,
+    case: BenchmarkCaseModel | None = None,
+) -> dict:
     extra_args: dict = {"safeconfirm": {"user_query": user_query}}
     if confirmer_model is not None:
         extra_args["safeconfirm"]["confirmer_model"] = confirmer_model
+    if case is not None and case.trusted_binding:
+        extra_args["safeconfirm"]["trusted_contacts"] = trusted_contacts_for_repair(case)
     return extra_args
 
 
@@ -39,7 +47,7 @@ def run_matched_pair(
     prompt = user_task.PROMPT
 
     case = case_by_user_task_id(user_task.ID, suite_name)
-    extra_args = _build_extra_args(prompt, confirmer_model)
+    extra_args = _build_extra_args(prompt, confirmer_model, case)
 
     runtime = FunctionsRuntime(suite.tools)
     model_output = None

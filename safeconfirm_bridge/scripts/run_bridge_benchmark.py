@@ -71,6 +71,7 @@ def _run_matched_pairs(
     confirmer: str,
     confirmer_model: str | None,
     enable_repair: bool | None,
+    temperature: float | None,
 ):
     if not load_dotenv(".env"):
         warnings.warn("No .env file found")
@@ -84,6 +85,7 @@ def _run_matched_pairs(
         confirmer=confirmer,
         confirmer_model=confirmer_model,
         enable_repair=enable_repair,
+        temperature=temperature,
     )
 
     user_task_ids = list(user_tasks) if user_tasks else list(suite.user_tasks)
@@ -118,6 +120,9 @@ def _run_matched_pairs(
     return runs
 
 
+POLICY_CHOICES = ["rule_v1", "baseline_vague", "baseline_allow", "baseline_block", "retrieval"]
+
+
 @click.command()
 @click.option("--suite", "-s", "suite_name", required=True, type=str)
 @click.option("--model", "-m", "model", type=ModelsEnum, default=ModelsEnum("deepseek-chat"))
@@ -125,7 +130,7 @@ def _run_matched_pairs(
 @click.option("--defense", "-d", "defense", type=str, default=None)
 @click.option(
     "--policy",
-    type=click.Choice(["rule_v1", "baseline_vague", "retrieval"]),
+    type=click.Choice(POLICY_CHOICES),
     default=None,
     help="SafeConfirm policy backend (rule_v1=source-aware, baseline_vague=vague confirm).",
 )
@@ -139,13 +144,21 @@ def _run_matched_pairs(
     "--confirmer-model",
     type=str,
     default=None,
-    help="LLM model for simulated user confirmation (default: gpt-4o-mini-2024-07-18).",
+    help="LLM model for simulated user confirmation (default: same as agent / deepseek-chat).",
 )
 @click.option(
     "--no-repair",
     is_flag=True,
     default=False,
     help="Disable REPAIR (H2 ablation: rule_v1 without contact lookup repair).",
+)
+@click.option("--run-id", type=str, default=None, help="Multi-seed run identifier (e.g. s0).")
+@click.option("--seed", type=int, default=None, help="Optional LLM sampling seed (stored in metrics).")
+@click.option(
+    "--temperature",
+    type=float,
+    default=None,
+    help="Agent LLM sampling temperature (default: provider default, usually 0.0).",
 )
 @click.option("--logdir", type=click.Path(path_type=Path), default=Path("runs/bridge"))
 @click.option("--user-task", "-ut", "user_tasks", multiple=True, default=())
@@ -165,6 +178,9 @@ def main(
     confirmer: str,
     confirmer_model: str | None,
     no_repair: bool,
+    run_id: str | None,
+    seed: int | None,
+    temperature: float | None,
     logdir: Path,
     user_tasks: tuple[str, ...],
     modules_to_load: tuple[str, ...],
@@ -185,9 +201,17 @@ def main(
         confirmer=confirmer,
         confirmer_model=confirmer_model,
         enable_repair=False if no_repair else None,
+        temperature=temperature,
     )
 
-    metrics = compute_e2e_metrics(runs)
+    metrics = compute_e2e_metrics(
+        runs,
+        run_id=run_id,
+        seed=seed,
+        model=str(model),
+        suite=suite_name,
+        defense=defense,
+    )
     save_e2e_metrics(run_logdir / "metrics.json", metrics)
 
     print(f"Suite: {suite_name}")

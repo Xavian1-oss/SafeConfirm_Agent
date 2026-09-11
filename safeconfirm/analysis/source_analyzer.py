@@ -18,6 +18,8 @@ CATEGORY_KEYWORDS: dict[str, list[str]] = {
     "deletion": ["delete", "remove", "drop"],
     "financial": ["pay", "transfer", "send money", "transaction", "schedule", "money"],
     "permission_change": ["share", "permission", "grant", "access"],
+    "file_write": ["save", "create", "export", "archive", "file"],
+    "scheduling": ["schedule", "calendar", "event", "invite", "meeting"],
     "booking": ["reserve", "book", "schedule", "flight", "hotel"],
     "unknown": [],
 }

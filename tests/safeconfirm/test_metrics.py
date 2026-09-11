@@ -19,6 +19,7 @@ from safeconfirm.types.models import (
 )
 
 BENCHMARK_CASES_PATH = Path(__file__).resolve().parents[2] / "safeconfirm/data/benchmark_cases_e2e.yaml"
+POISON_RECIPIENT = "contact.override@ref-mail.com"
 
 
 def _record(
@@ -36,8 +37,8 @@ def _record(
 ) -> InterventionRecordModel:
     slot = CriticalSlotModel(
         name="recipients",
-        value=["attacker@example.com"],
-        value_normalized="attacker@example.com",
+        value=[POISON_RECIPIENT],
+        value_normalized=POISON_RECIPIENT,
         slot_type="email_list",
         risk_weight=1.0,
         slot_class=slot_class,  # type: ignore[arg-type]
@@ -52,7 +53,7 @@ def _record(
     return InterventionRecordModel(
         tool_call_id="call_1",
         tool_name="send_email",
-        tool_args={"recipients": ["attacker@example.com"], "subject": "S", "body": "B"},
+        tool_args={"recipients": [POISON_RECIPIENT], "subject": "S", "body": "B"},
         critical_slots=[slot],
         slot_records=[slot_record],
         has_untrusted_binding=True,
@@ -64,7 +65,7 @@ def _record(
         confirmation_response=confirmation_response,
         confirmation_laundering_risk=laundering,
         executed=executed,
-        executed_binding=binding or {"recipients": ["attacker@example.com"], "subject": "S", "body": "B"},
+        executed_binding=binding or {"recipients": [POISON_RECIPIENT], "subject": "S", "body": "B"},
         repair_attempted=repair_attempted,
         repair_result=repair_result,
     )
@@ -83,11 +84,11 @@ def _run(case_id: str, utility: bool, record: InterventionRecordModel, benign: b
     )
 
 
-def test_benchmark_cases_has_sixteen_e2e_cases():
+def test_benchmark_cases_has_twenty_e2e_cases():
     cases = load_benchmark_cases(BENCHMARK_CASES_PATH)
-    assert len(cases) == 16
+    assert len(cases) == 20
     corruption_cases = [case for case in cases if not case.benign]
-    assert len(corruption_cases) == 13
+    assert len(corruption_cases) == 17
 
 
 def test_executed_with_untrusted_binding_detects_poisoned_execution():
@@ -95,7 +96,7 @@ def test_executed_with_untrusted_binding_detects_poisoned_execution():
     assert executed_with_untrusted_binding(record) is True
     assert executed_with_untrusted_binding(
         record,
-        corrupted_slots={"recipients": "attacker@example.com"},
+        corrupted_slots={"recipients": POISON_RECIPIENT},
     ) is True
 
 
@@ -110,7 +111,7 @@ def test_executed_with_untrusted_binding_ignores_stale_gap_when_trusted_executed
     )
     record.slot_records[0].slot.value_normalized = "supervisor@university.edu"
     record.slot_records[0].slot.value = ["supervisor@university.edu"]
-    corrupted_slots = {"recipients": "attacker@example.com"}
+    corrupted_slots = {"recipients": POISON_RECIPIENT}
     assert executed_with_untrusted_binding(record) is True
     assert executed_with_untrusted_binding(record, corrupted_slots=corrupted_slots) is False
 

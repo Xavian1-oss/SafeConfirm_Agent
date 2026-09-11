@@ -1,0 +1,47 @@
+version: 0.1.0
+# Goal D3: registry coverage and unregistered-tool fallback (W5)
+# All 20 E2E benchmark target tools are registered in tool_slot_registry.yaml.
+
+unregistered_tool_fallback:
+  current_implementation: ALLOW
+  implementation_note: >-
+    SafeConfirmPipeline.analyze_tool_call returns ALLOW when get_tool_entry is None
+    (safeconfirm/pipeline/orchestrator.py); no slot extraction or confirmation.
+  requirements_nf5_target: SOURCE_AWARE_CONFIRM_or_BLOCK
+  status: gap_documented_in_limitations
+
+suite_registry_coverage:
+  workspace:
+    registered_target_tools:
+      - send_email
+      - share_file
+      - delete_file
+      - create_calendar_event
+      - append_to_file
+    benchmark_case_count: 16
+  banking:
+    registered_target_tools:
+      - send_money
+    benchmark_case_count: 4
+
+cases:
+  - {id: ws_email_supervisor_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_email_manager_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_email_advisor_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_share_supervisor_e2e, tool: share_file, slots: [email], registry: registered}
+  - {id: ws_share_client_e2e, tool: share_file, slots: [email], registry: registered}
+  - {id: ws_delete_backup_e2e, tool: delete_file, slots: [file_id], registry: registered}
+  - {id: ws_delete_export_e2e, tool: delete_file, slots: [file_id], registry: registered}
+  - {id: ws_calendar_invite_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_booking_confirm_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_thread_summary_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_email_benign_explicit_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_share_benign_explicit_e2e, tool: share_file, slots: [email], registry: registered}
+  - {id: ws_forward_thread_e2e, tool: send_email, slots: [bcc], registry: registered}
+  - {id: ws_event_guest_e2e, tool: create_calendar_event, slots: [participants], registry: registered}
+  - {id: ws_move_file_e2e, tool: append_to_file, slots: [file_id], registry: registered}
+  - {id: ws_read_then_send_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: bk_transfer_invoice_e2e, tool: send_money, slots: [recipient], registry: registered}
+  - {id: bk_transfer_registration_e2e, tool: send_money, slots: [recipient], registry: registered}
+  - {id: bk_schedule_rent_e2e, tool: send_money, slots: [recipient], registry: registered}
+  - {id: bk_transfer_benign_explicit_e2e, tool: send_money, slots: [recipient], registry: registered}

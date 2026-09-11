@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
+# D0b: REPAIR ablation on role-reference subset (ground_truth includes REPAIR).
+# Workspace user_task_0..4: email supervisor/manager/advisor + share supervisor/client.
 set -euo pipefail
-cd "$(dirname "$0")/.."
-# shellcheck source=benchmark_subsets.sh
-source "$(dirname "$0")/benchmark_subsets.sh"
 
 MODEL="${MODEL:-deepseek-chat}"
 SUITE="${SUITE:-safeconfirm_workspace}"
-SUBSET="${SUBSET:-12}"
-LOGROOT="${LOGROOT:-runs/bridge/ablation_repair_v2}"
+LOGROOT="${LOGROOT:-runs/bridge/ablation_repair_subset_v1}"
+TASKS=(user_task_0 user_task_1 user_task_2 user_task_3 user_task_4)
 
-load_workspace_subset_args "${SUBSET}"
+UT_FLAGS=()
+for t in "${TASKS[@]}"; do
+  UT_FLAGS+=(-ut "$t")
+done
 
 run_on() {
-  echo "=== repair ON (model=${MODEL}) -> ${LOGROOT}/on ==="
+  echo "=== repair subset ON (${#TASKS[@]} cases) -> ${LOGROOT}/on ==="
   uv run python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
     --suite "${SUITE}" \
     --model "${MODEL}" \
@@ -21,12 +23,12 @@ run_on() {
     --policy rule_v1 \
     --confirmer llm_user \
     --confirmer-model "${MODEL}" \
-    --logdir "${LOGROOT}/on" \
-    "${SUBSET_ARGS[@]+"${SUBSET_ARGS[@]}"}"
+    "${UT_FLAGS[@]}" \
+    --logdir "${LOGROOT}/on"
 }
 
 run_off() {
-  echo "=== repair OFF (model=${MODEL}) -> ${LOGROOT}/off ==="
+  echo "=== repair subset OFF (${#TASKS[@]} cases) -> ${LOGROOT}/off ==="
   uv run python -m safeconfirm_bridge.scripts.run_bridge_benchmark \
     --suite "${SUITE}" \
     --model "${MODEL}" \
@@ -35,9 +37,9 @@ run_off() {
     --policy rule_v1 \
     --confirmer llm_user \
     --confirmer-model "${MODEL}" \
+    "${UT_FLAGS[@]}" \
     --no-repair \
-    --logdir "${LOGROOT}/off" \
-    "${SUBSET_ARGS[@]+"${SUBSET_ARGS[@]}"}"
+    --logdir "${LOGROOT}/off"
 }
 
 run_on
@@ -45,12 +47,12 @@ run_off
 
 for label in on off; do
   echo ""
-  echo "=== repair ${label} ==="
+  echo "=== subset ${label} ==="
   uv run python -c "
 import json
 from pathlib import Path
 p = Path('${LOGROOT}/${label}/${SUITE}/metrics.json')
 m = json.loads(p.read_text())
-print(f\"TSR={m['tsr']*100:.1f}% ASR={m['asr']*100:.1f}% RSR={m['rsr']*100:.1f}% UAR={m['uar']*100:.1f}% Stall={m['stall_rate']*100:.1f}% Composite={m['composite']*100:.1f}%\")
+print(f\"TSR={m['tsr']*100:.1f}% ASR={m['asr']*100:.1f}% repair_attempts={m['repair_attempts']} RSR={m['rsr']*100:.1f}%\")
 "
 done

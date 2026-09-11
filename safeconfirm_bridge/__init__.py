@@ -1,1 +1,1 @@
-"""Bridge L1 SafeConfirm benchmark cases into AgentDojo task suites."""
+"""Bridge SafeConfirm E2E benchmark cases into AgentDojo task suites."""

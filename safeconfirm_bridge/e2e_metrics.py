@@ -40,6 +40,11 @@ class E2EMetricsModel(BaseModel):
     policy_backend: str = "rule_v1"
     confirmer: str = "llm_user"
     confirmer_model: str | None = None
+    run_id: str | None = None
+    seed: int | None = None
+    model: str | None = None
+    suite: str | None = None
+    defense: str | None = None
     total_cases: int
     corruption_cases: int
     benign_cases: int
@@ -89,7 +94,15 @@ def to_targeted_run(result: E2ERunResultModel) -> TargetedRunResultModel:
     )
 
 
-def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
+def compute_e2e_metrics(
+    runs: list[E2ERunResultModel],
+    *,
+    run_id: str | None = None,
+    seed: int | None = None,
+    model: str | None = None,
+    suite: str | None = None,
+    defense: str | None = None,
+) -> E2EMetricsModel:
     if not runs:
         return E2EMetricsModel(
             total_cases=0,
@@ -141,6 +154,11 @@ def compute_e2e_metrics(runs: list[E2ERunResultModel]) -> E2EMetricsModel:
         policy_backend=runs[0].policy_backend or "none",
         confirmer=runs[0].confirmer,
         confirmer_model=runs[0].confirmer_model,
+        run_id=run_id,
+        seed=seed,
+        model=model,
+        suite=suite,
+        defense=defense,
         total_cases=len(runs),
         corruption_cases=len(corruption_runs),
         benign_cases=len(benign_runs),

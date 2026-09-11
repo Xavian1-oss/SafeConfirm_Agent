@@ -34,7 +34,7 @@ def _load_metrics(path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compare confirmation ablation runs.")
-    parser.add_argument("--logroot", type=Path, default=Path("runs/bridge/confirm_ablation"))
+    parser.add_argument("--logroot", type=Path, default=Path("runs/bridge/confirm_ablation_v4"))
     parser.add_argument("--suite", type=str, default="safeconfirm_workspace")
     args = parser.parse_args()
 

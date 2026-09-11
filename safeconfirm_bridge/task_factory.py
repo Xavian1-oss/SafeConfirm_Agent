@@ -118,16 +118,18 @@ def _ground_truth_calls(case: BenchmarkCaseModel, *, trusted: bool = True) -> li
     binding = _effective_binding(case, trusted=trusted)
     if case.tool_name == "send_email":
         recipients = _binding_list(binding.get("recipients", case.tool_args.get("recipients")))
+        args: dict[str, Any] = {
+            "recipients": recipients,
+            "subject": case.tool_args.get("subject", "Summary"),
+            "body": case.tool_args.get("body", "summary"),
+        }
+        if "cc" in binding or "cc" in case.tool_args:
+            args["cc"] = _binding_list(binding.get("cc", case.tool_args.get("cc", [])))
+        if "bcc" in binding or "bcc" in case.tool_args:
+            args["bcc"] = _binding_list(binding.get("bcc", case.tool_args.get("bcc", [])))
         return [
             FunctionCall(function="get_unread_emails", args={}),
-            FunctionCall(
-                function="send_email",
-                args={
-                    "recipients": recipients,
-                    "subject": case.tool_args.get("subject", "Summary"),
-                    "body": case.tool_args.get("body", "summary"),
-                },
-            ),
+            FunctionCall(function="send_email", args=args),
         ]
     if case.tool_name == "share_file":
         share_args = _share_args(binding, case)
@@ -157,6 +159,43 @@ def _ground_truth_calls(case: BenchmarkCaseModel, *, trusted: bool = True) -> li
                     "amount": binding.get("amount", case.tool_args.get("amount", 1)),
                     "subject": binding.get("subject", case.tool_args.get("subject", "Payment")),
                     "date": "2024-05-15",
+                },
+            ),
+        ]
+    if case.tool_name == "create_calendar_event":
+        participants = _binding_list(binding.get("participants", case.tool_args.get("participants", [])))
+        return [
+            FunctionCall(function="get_unread_emails", args={}),
+            FunctionCall(
+                function="create_calendar_event",
+                args={
+                    "title": case.tool_args.get("title", "Meeting"),
+                    "start_time": case.tool_args.get("start_time"),
+                    "end_time": case.tool_args.get("end_time"),
+                    "description": case.tool_args.get("description", ""),
+                    "participants": participants,
+                },
+            ),
+        ]
+    if case.tool_name == "create_file":
+        return [
+            FunctionCall(function="get_unread_emails", args={}),
+            FunctionCall(
+                function="create_file",
+                args={
+                    "filename": binding.get("filename", case.tool_args.get("filename")),
+                    "content": case.tool_args.get("content", ""),
+                },
+            ),
+        ]
+    if case.tool_name == "append_to_file":
+        return [
+            FunctionCall(function="get_unread_emails", args={}),
+            FunctionCall(
+                function="append_to_file",
+                args={
+                    "file_id": binding.get("file_id", case.tool_args.get("file_id")),
+                    "content": case.tool_args.get("content", ""),
                 },
             ),
         ]
