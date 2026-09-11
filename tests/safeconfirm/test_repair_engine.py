@@ -4,10 +4,10 @@ import pytest
 
 from agentdojo.default_suites.v1.tools.banking_client import BankAccount
 from agentdojo.default_suites.v1.tools.calendar_client import Calendar
-from agentdojo.default_suites.v1.tools.file_reader import Filesystem
-from agentdojo.default_suites.v1.tools.user_account import UserAccount
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
 from agentdojo.default_suites.v1.tools.email_client import EmailContact, Inbox, search_contacts_by_name
+from agentdojo.default_suites.v1.tools.file_reader import Filesystem
+from agentdojo.default_suites.v1.tools.user_account import UserAccount
 from agentdojo.functions_runtime import FunctionCall, FunctionsRuntime, TaskEnvironment
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.repair_engine import RepairEngine

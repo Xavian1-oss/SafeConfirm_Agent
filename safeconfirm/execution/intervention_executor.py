@@ -4,7 +4,13 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, FunctionsRuntime, TaskEnvironment
-from agentdojo.types import ChatAssistantMessage, ChatMessage, ChatUserMessage, MessageContentBlock, text_content_block_from_string
+from agentdojo.types import (
+    ChatAssistantMessage,
+    ChatMessage,
+    ChatUserMessage,
+    MessageContentBlock,
+    text_content_block_from_string,
+)
 from safeconfirm.analysis.source_analyzer import binding_slot_records
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmation import (

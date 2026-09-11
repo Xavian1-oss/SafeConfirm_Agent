@@ -8,11 +8,10 @@ from agentdojo.base_tasks import BaseInjectionTask, BaseUserTask
 from agentdojo.functions_runtime import FunctionsRuntime
 from agentdojo.task_suite.task_suite import TaskSuite, functions_stack_trace_from_messages, model_output_from_messages
 from safeconfirm.pipeline.orchestrator import build_log_payload
-from safeconfirm.types.models import SafeConfirmLogModel
-from safeconfirm.types.models import BenchmarkCaseModel
+from safeconfirm.types.models import BenchmarkCaseModel, SafeConfirmLogModel
 from safeconfirm_bridge.case_registry import case_by_user_task_id
-from safeconfirm_bridge.environment import trusted_contacts_for_repair
 from safeconfirm_bridge.e2e_metrics import E2ERunResultModel, save_e2e_run, target_tool_called
+from safeconfirm_bridge.environment import trusted_contacts_for_repair
 
 
 def _build_extra_args(
