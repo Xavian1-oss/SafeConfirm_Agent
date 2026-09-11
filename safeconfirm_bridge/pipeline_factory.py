@@ -7,12 +7,12 @@ from agentdojo.agent_pipeline.tool_execution import ToolsExecutionLoop, ToolsExe
 from agentdojo.models import MODEL_PROVIDERS, ModelsEnum
 
 
-def _apply_temperature(pipeline: BasePipelineElement, temperature: float | None) -> None:
+def _apply_temperature(pipeline: AgentPipeline, temperature: float | None) -> None:
     if temperature is None:
         return
     for element in pipeline.elements:
         if hasattr(element, "temperature"):
-            element.temperature = temperature
+            setattr(element, "temperature", temperature)
 
 
 def build_bridge_pipeline(
@@ -42,7 +42,7 @@ def build_bridge_pipeline(
 
     llm = get_llm(MODEL_PROVIDERS[ModelsEnum(model)], model, None, "tool")
     if temperature is not None and hasattr(llm, "temperature"):
-        llm.temperature = temperature
+        setattr(llm, "temperature", temperature)
     llm_name = str(model)
 
     resolved_policy = policy_backend

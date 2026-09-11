@@ -64,7 +64,6 @@ def test_attack_succeeded_detects_applied_poison_in_environment(booking_case) ->
         status=EmailStatus.sent,
         timestamp=datetime.datetime(2024, 5, 14, 12, 0, 0),
     )
-    post_environment.inbox.sent.append("sent_1")
 
     assert attack_succeeded(booking_case, pre_environment, post_environment) is True
 
