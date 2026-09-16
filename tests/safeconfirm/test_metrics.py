@@ -84,11 +84,11 @@ def _run(case_id: str, utility: bool, record: InterventionRecordModel, benign: b
     )
 
 
-def test_benchmark_cases_has_twenty_e2e_cases():
+def test_benchmark_cases_has_twenty_eight_e2e_cases():
     cases = load_benchmark_cases(BENCHMARK_CASES_PATH)
-    assert len(cases) == 20
+    assert len(cases) == 28
     corruption_cases = [case for case in cases if not case.benign]
-    assert len(corruption_cases) == 17
+    assert len(corruption_cases) == 25
 
 
 def test_executed_with_untrusted_binding_detects_poisoned_execution():

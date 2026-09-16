@@ -11,8 +11,9 @@ SUITE="${NATIVE_SUITE:-workspace}"
 BENCH_VERSION="${NATIVE_BENCH_VERSION:-v1.2.2}"
 ATTACK="${NATIVE_ATTACK:-tool_knowledge}"
 LOGROOT="${NATIVE_LOGROOT:-runs/native_gen/ds_v1}"
-# Subset smoke: export NATIVE_USER_TASKS="-ut user_task_0 -ut user_task_1 ..."
-USER_TASKS=${NATIVE_USER_TASKS:-}
+# Subset smoke (default: 10 native workspace tasks); override with NATIVE_USER_TASKS=
+DEFAULT_NATIVE_UT="-ut user_task_0 -ut user_task_1 -ut user_task_2 -ut user_task_3 -ut user_task_4 -ut user_task_5 -ut user_task_6 -ut user_task_7 -ut user_task_8 -ut user_task_9"
+USER_TASKS=${NATIVE_USER_TASKS:-$DEFAULT_NATIVE_UT}
 
 mkdir -p "$LOGROOT"
 

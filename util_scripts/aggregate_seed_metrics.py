@@ -18,6 +18,7 @@ METRIC_KEYS = (
     "corruption_tsr",
     "benign_tsr",
     "stall_rate",
+    "confirm_approval_rate",
     "composite",
 )
 

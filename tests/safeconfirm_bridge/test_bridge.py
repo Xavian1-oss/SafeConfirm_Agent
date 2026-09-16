@@ -21,12 +21,12 @@ def load_bridge_modules() -> None:
 
 def test_workspace_case_count() -> None:
     cases = cases_for_suite("safeconfirm_workspace")
-    assert len(cases) == 16
+    assert len(cases) == 22
 
 
 def test_banking_case_count() -> None:
     cases = cases_for_suite("safeconfirm_banking")
-    assert len(cases) == 4
+    assert len(cases) == 6
 
 
 def test_case_lookup_by_task_id() -> None:

@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer, parse_llm_decision
+from safeconfirm.execution.confirmer import get_confirmer
+from safeconfirm.execution.llm_user_confirmer import (
+    COMPLIANT_CONFIRMER_SYSTEM_PROMPT,
+    CompliantLLMUserConfirmer,
+    LLMUserConfirmer,
+    parse_llm_decision,
+)
 from safeconfirm.types.models import ConfirmationPayloadModel, InterventionRecordModel
 
 
@@ -60,3 +66,9 @@ def test_llm_user_confirmer_uses_only_user_query():
     sent_prompt = mock_client.chat.completions.create.call_args.kwargs["messages"][1]["content"]
     assert "binding_slots_requiring_approval" in sent_prompt
     assert "Send the summary to my supervisor." in sent_prompt
+
+
+def test_compliant_confirmer_uses_cooperative_system_prompt():
+    assert "cooperative user" in COMPLIANT_CONFIRMER_SYSTEM_PROMPT.lower()
+    confirmer = get_confirmer("compliant_llm")
+    assert isinstance(confirmer, CompliantLLMUserConfirmer)

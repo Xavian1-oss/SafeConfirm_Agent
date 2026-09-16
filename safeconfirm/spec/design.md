@@ -516,7 +516,7 @@ def is_confirmation_laundering(
 
 ## 7. 工具注册表（`tool_slot_registry.yaml`）
 
-**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（20 case 目标工具均已注册）。
+**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（28 case 目标工具均已注册）。
 
 **未注册工具（当前实现）：** `SafeConfirmPipeline.analyze_tool_call` 在 `get_tool_entry` 返回 `None` 时直接 `ALLOW`（无 slot 分析）。与 NF5 fail-closed 目标存在差距；Limitations 已披露。
 
@@ -749,7 +749,8 @@ tests/safeconfirm_bridge/
 
 ```
 runs/bridge/
-  e2e_deepseek_v4_s{0,1,2}/          # Goal D 主结果（16 ws, 3 seeds）
+  e2e_extended_extend_v1_*/          # 主表 E2E（28-case paired, 3 seeds）
+  e2e_deepseek_v4_s{0,1,2}/          # legacy Goal D（16 ws SC-only）
   e2e_deepseek_v3_s{0,1,2}/          # Goal C 12-case 对照
   e2e_banking_deepseek_v4/
   component_ablation/allow_ds/ block_ds/
@@ -763,7 +764,7 @@ runs/native_gen/ds_v1_smoke/
 
 **Bridge CLI 扩展（`run_bridge_benchmark.py`）:** `--run-id`, `--seed`, `--no-repair`, `baseline_allow`, `baseline_block`, `--defense safeconfirm_retrieval`
 
-**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（20 case 目标工具均已注册）。
+**Benchmark 覆盖：** 见 `benchmark_registry_coverage.yaml`（28 case 目标工具均已注册）。
 
 ---
 

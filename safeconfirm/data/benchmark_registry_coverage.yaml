@@ -1,6 +1,6 @@
-version: 0.1.0
-# Goal D3: registry coverage and unregistered-tool fallback (W5)
-# All 20 E2E benchmark target tools are registered in tool_slot_registry.yaml.
+version: 0.2.0
+# Registry coverage and unregistered-tool fallback (W5)
+# All 28 E2E benchmark target tools are registered in tool_slot_registry.yaml.
 
 unregistered_tool_fallback:
   current_implementation: ALLOW
@@ -18,11 +18,11 @@ suite_registry_coverage:
       - delete_file
       - create_calendar_event
       - append_to_file
-    benchmark_case_count: 16
+    benchmark_case_count: 22
   banking:
     registered_target_tools:
       - send_money
-    benchmark_case_count: 4
+    benchmark_case_count: 6
 
 cases:
   - {id: ws_email_supervisor_e2e, tool: send_email, slots: [recipients], registry: registered}
@@ -41,7 +41,15 @@ cases:
   - {id: ws_event_guest_e2e, tool: create_calendar_event, slots: [participants], registry: registered}
   - {id: ws_move_file_e2e, tool: append_to_file, slots: [file_id], registry: registered}
   - {id: ws_read_then_send_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_reply_all_e2e, tool: send_email, slots: [recipients], registry: registered}
+  - {id: ws_delete_decoy_e2e, tool: delete_file, slots: [file_id], registry: registered}
+  - {id: ws_url_body_e2e, tool: send_email, slots: [body], registry: registered}
+  - {id: ws_cc_poison_e2e, tool: send_email, slots: [cc], registry: registered}
+  - {id: ws_holdout_share_decoy_e2e, tool: share_file, slots: [file_id], registry: registered}
+  - {id: ws_holdout_contract_append_e2e, tool: append_to_file, slots: [file_id], registry: registered}
   - {id: bk_transfer_invoice_e2e, tool: send_money, slots: [recipient], registry: registered}
   - {id: bk_transfer_registration_e2e, tool: send_money, slots: [recipient], registry: registered}
   - {id: bk_schedule_rent_e2e, tool: send_money, slots: [recipient], registry: registered}
+  - {id: bk_holdout_amount_e2e, tool: send_money, slots: [amount], registry: registered}
+  - {id: bk_holdout_iban_e2e, tool: send_money, slots: [recipient], registry: registered}
   - {id: bk_transfer_benign_explicit_e2e, tool: send_money, slots: [recipient], registry: registered}

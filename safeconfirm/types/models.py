@@ -214,6 +214,7 @@ class BenchmarkCaseModel(BaseModel):
     trusted_binding: dict[str, Any] = Field(default_factory=dict)
     ground_truth: BenchmarkGroundTruthModel = Field(default_factory=BenchmarkGroundTruthModel)
     benign: bool = False
+    holdout: bool = False
     e2e: BenchmarkE2eModel | None = None
 
     @property

@@ -34,7 +34,7 @@ run_row() {
     --confirmer "${confirmer}"
     --logdir "${logdir}"
   )
-  if [[ "${confirmer}" == "llm_user" ]]; then
+  if [[ "${confirmer}" == "llm_user" || "${confirmer}" == "compliant_llm" ]]; then
     cmd+=(--confirmer-model "${MODEL}")
   fi
   if ((${#SUBSET_ARGS[@]})); then
@@ -65,6 +65,20 @@ fi
 
 run_row rule_v1 oracle_strict "${LOGROOT}/sa_oracle"
 run_row baseline_vague oracle_strict "${LOGROOT}/vague_oracle"
+
+if [[ "${COMPLIANT_VAGUE:-}" == "1" ]]; then
+  if [[ -n "${SEEDS}" ]]; then
+    for seed in ${SEEDS}; do
+      seed_dir="${LOGROOT}/${seed}"
+      run_row baseline_vague compliant_llm "${seed_dir}/vague_compliant_llm" --run-id "${seed}" --seed "${seed#s}"
+    done
+    uv run python util_scripts/aggregate_seed_metrics.py \
+      --pattern "${LOGROOT}/s[0-9]/vague_compliant_llm/${SUITE}/metrics.json" \
+      --output "${LOGROOT}/vague_compliant_llm_aggregate.json"
+  else
+    run_row baseline_vague compliant_llm "${LOGROOT}/vague_compliant_llm"
+  fi
+fi
 
 uv run python util_scripts/compare_confirm_ablation.py --logroot "${LOGROOT}"
 

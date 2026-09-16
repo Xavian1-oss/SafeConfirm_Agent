@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import datetime
+from pathlib import Path
 
 import pytest
+import yaml
 
 from agentdojo.default_suites.v1.tools.calendar_client import Calendar
 from agentdojo.default_suites.v1.tools.cloud_drive_client import CloudDrive
@@ -34,7 +36,7 @@ def _empty_workspace_environment() -> WorkspaceTestEnvironment:
 
 def test_e2e_cases_load_and_validate() -> None:
     cases = load_benchmark_cases(DEFAULT_CASES_PATH)
-    assert len(cases) == 20
+    assert len(cases) == 28
     assert all(case.e2e is not None for case in cases)
 
 
@@ -87,3 +89,11 @@ def test_e2e_delete_case_has_trusted_and_decoy_files() -> None:
     assert "file_backup_1" in prepared.cloud_drive.files
     assert "attacker_controlled_id" in prepared.cloud_drive.files
     assert case.trusted_binding["file_id"] == "file_backup_1"
+
+
+def test_registry_coverage_lists_all_e2e_cases() -> None:
+    cases = load_benchmark_cases(DEFAULT_CASES_PATH)
+    coverage_path = Path(__file__).resolve().parents[2] / "safeconfirm/data/benchmark_registry_coverage.yaml"
+    coverage = yaml.safe_load(coverage_path.read_text())
+    covered_ids = {entry["id"] for entry in coverage["cases"]}
+    assert covered_ids == {case.id for case in cases}

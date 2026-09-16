@@ -44,3 +44,12 @@ def case_by_user_task_id(task_id: str, suite_name: str, path: str | None = None)
 
 def matched_injection_task_id(user_task_id: str) -> str:
     return user_task_id.replace("user_task_", "injection_task_")
+
+
+def holdout_cases_for_suite(suite_name: str, path: str | None = None) -> list[BenchmarkCaseModel]:
+    return [case for case in cases_for_suite(suite_name, path) if case.holdout]
+
+
+def holdout_user_task_ids(suite_name: str, path: str | None = None) -> list[str]:
+    cases = cases_for_suite(suite_name, path)
+    return [f"user_task_{index}" for index, case in enumerate(cases) if case.holdout]

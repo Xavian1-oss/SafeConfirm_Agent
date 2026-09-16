@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Goal C master runner: blocker experiments (12-case ablation + L0 + multi-seed).
-# For 20-case main table (Goal D), run ./util_scripts/run_goal_d_main.sh separately.
+# For primary E2E (28-case), run ./util_scripts/run_extended_28case.sh separately.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -30,5 +30,5 @@ run_step "E10 L0 compatibility (DeepSeek)" env L0_MODEL=deepseek-chat L0_LOGROOT
 run_step "E1+E6 multi-seed" ./util_scripts/run_goal_c_multiseed.sh
 
 log "Goal C experiment batch complete"
-log "Goal D 20-case main: ./util_scripts/run_goal_d_main.sh"
+log "Primary E2E (28-case): ./util_scripts/run_extended_28case.sh"
 log "Optional cross-model: CROSS_MODEL=... ./util_scripts/run_cross_model_validation.sh"

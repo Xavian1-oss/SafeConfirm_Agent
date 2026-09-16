@@ -19,6 +19,10 @@ def get_confirmer(kind: str = "llm_user", model: str | None = None) -> Confirmer
         from safeconfirm.execution.oracle_confirmer import StrictOracleConfirmer
 
         return StrictOracleConfirmer()
+    if kind == "compliant_llm":
+        from safeconfirm.execution.llm_user_confirmer import CompliantLLMUserConfirmer
+
+        return CompliantLLMUserConfirmer(model=model)
     from safeconfirm.execution.llm_user_confirmer import LLMUserConfirmer
 
     return LLMUserConfirmer(model=model)

@@ -94,7 +94,7 @@
 
 **验收：** DeepSeek 主表报告 20-case TSR/ASR；旧 16-case 数字可放 Appendix 对照。☑ workspace 16-case v4: 89.6%±3.0% TSR / 0% ASR (3 seeds); banking 4-case 仍 100%/0% (cases 未变).
 
-### 6.4 D2 workspace 20-case main（2026-09-08）
+### 6.4 D2 workspace 20-case main（2026-09-08，已被 28-case E2E 取代）
 
 | Scope | TSR | ASR | 目录 |
 |-------|-----|-----|------|
@@ -217,6 +217,6 @@
 # D0: REPAIR v2
 LOGROOT=runs/bridge/ablation_repair_v2 ./util_scripts/run_repair_ablation.sh
 
-# D2: 20-case main（cases 就绪后）
-./util_scripts/run_goal_d_main.sh
+# Primary E2E: 28-case paired（supersedes Goal D 20-case main）
+./util_scripts/run_extended_28case.sh
 ```

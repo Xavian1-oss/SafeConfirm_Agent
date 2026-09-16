@@ -70,9 +70,10 @@ Goal C 已全部完成；详细 checklist 不再在此维护，避免与 [improv
 
 ```bash
 ./util_scripts/run_goal_c_all.sh          # Goal C blocker 批量（12-case ablation + L0 + multi-seed）
-./util_scripts/run_goal_d_main.sh       # Goal D 主表（16 ws + 4 bk，3 seeds）
+./util_scripts/run_extended_28case.sh     # 主表 E2E（22 ws + 6 bk，paired P0 vs SC，3 seeds）
+./util_scripts/run_holdout_paired.sh      # Holdout 4 cases（Appendix）
 ```
 
-**当前主结果（DeepSeek-only）：** workspace 16-case `e2e_deepseek_v4_s*` — TSR **89.6%±3.0 pp**, ASR **0%**；banking 4-case `e2e_banking_deepseek_v4/` — 100%/0%。12-case 对照（footnote）见 `e2e_deepseek_v3_s*`。
+**当前主结果（DeepSeek-only，28-case paired）：** workspace **39.4%/0%** TSR/ASR（SC）vs **27.3%/38.3%**（P0）；banking **0%/0%** vs **0%/40%**。机制消融（confirm/component）仍用 12-case frozen prefix。
 
 **明确 out of scope：** human study、instruction hijacking、新 suite、与 AgentVisor/PlanGuard 数值对标。跨模型子集验证：`./util_scripts/run_cross_model_validation.sh`（optional，非 blocker）。

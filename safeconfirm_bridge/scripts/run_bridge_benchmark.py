@@ -136,9 +136,9 @@ POLICY_CHOICES = ["rule_v1", "baseline_vague", "baseline_allow", "baseline_block
 )
 @click.option(
     "--confirmer",
-    type=click.Choice(["llm_user", "oracle_strict"]),
+    type=click.Choice(["llm_user", "compliant_llm", "oracle_strict"]),
     default="llm_user",
-    help="Simulated user confirmer (llm_user or oracle_strict).",
+    help="Simulated user confirmer (llm_user, compliant_llm, or oracle_strict).",
 )
 @click.option(
     "--confirmer-model",

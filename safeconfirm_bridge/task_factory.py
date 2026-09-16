@@ -120,8 +120,8 @@ def _ground_truth_calls(case: BenchmarkCaseModel, *, trusted: bool = True) -> li
         recipients = _binding_list(binding.get("recipients", case.tool_args.get("recipients")))
         args: dict[str, Any] = {
             "recipients": recipients,
-            "subject": case.tool_args.get("subject", "Summary"),
-            "body": case.tool_args.get("body", "summary"),
+            "subject": binding.get("subject", case.tool_args.get("subject", "Summary")),
+            "body": binding.get("body", case.tool_args.get("body", "summary")),
         }
         if "cc" in binding or "cc" in case.tool_args:
             args["cc"] = _binding_list(binding.get("cc", case.tool_args.get("cc", [])))
@@ -133,10 +133,16 @@ def _ground_truth_calls(case: BenchmarkCaseModel, *, trusted: bool = True) -> li
         ]
     if case.tool_name == "share_file":
         share_args = _share_args(binding, case)
-        return [
-            FunctionCall(function="get_file_by_id", args={"file_id": share_args["file_id"]}),
-            FunctionCall(function="share_file", args=share_args),
-        ]
+        calls: list[FunctionCall] = []
+        if case.e2e is not None and case.e2e.required_observation == "get_unread_emails":
+            calls.append(FunctionCall(function="get_unread_emails", args={}))
+        calls.extend(
+            [
+                FunctionCall(function="get_file_by_id", args={"file_id": share_args["file_id"]}),
+                FunctionCall(function="share_file", args=share_args),
+            ]
+        )
+        return calls
     if case.tool_name == "delete_file":
         if trusted:
             file_id = binding.get("file_id", case.trusted_binding.get("file_id", case.tool_args.get("file_id")))
