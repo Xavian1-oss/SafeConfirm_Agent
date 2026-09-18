@@ -9,7 +9,8 @@
 | [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) | **审稿收口 Steps 1–5** — 一致性、CLR 口径、fail-open、baseline 叙事、Table 1 |
 | [evidence_strength_plan.md](./evidence_strength_plan.md) | **S8 证据强度** — 任务状态、MV5、external/provenance/banking |
 | [paper_experiment_consistency.md](./paper_experiment_consistency.md) | **论文 ↔ 实验** 逐表核对与逻辑闭环 |
-| [claim_evidence_audit.md](./claim_evidence_audit.md) | Abstract/Conclusion claim 与 evidence 对齐 |
+| [submission_consistency_audit.md](./submission_consistency_audit.md) | **提交前** 全文 consistency + claim–evidence 审计 |
+| [claim_evidence_audit.md](./claim_evidence_audit.md) | Claim 索引（与 submission audit 同步） |
 | [benchmark_design.md](./benchmark_design.md) | 28 diagnostic + 8 external 双轨、脚本入口 |
 | [banking_tsr_root_cause.md](./banking_tsr_root_cause.md) | Banking TSR/utility 根因与叙事边界 |
 

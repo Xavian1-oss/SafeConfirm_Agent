@@ -1,6 +1,6 @@
 # 论文 ↔ 实验一致性核对（SafeConfirm AAMAS 2027）
 
-**版本:** 0.1.0 · 2026-09-16  
+**版本:** 0.2.0 · 2026-09-18  
 **论文:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **刷新:** `./util_scripts/sync_paper_metrics.sh` 后对照 `paper_metrics/canonical/`
 
@@ -88,15 +88,10 @@ Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; 
 
 ```bash
 ./util_scripts/sync_paper_metrics.sh
-uv run python - <<'PY'
-# 见仓库内一次性脚本或复制 paper_experiment_consistency 附录核对表
-import json
-from pathlib import Path
-C = Path("6a9fb8173b16b4dea4fd1079/paper_metrics/canonical")
-assert abs(json.loads((C/"extended28_ws_sc.json").read_text())["tsr_mean"]*100 - 39.4) < 0.05
-print("spot check OK")
-PY
+uv run python util_scripts/verify_paper_metrics.py
 ```
+
+提交前完整审计清单：[submission_consistency_audit.md](./submission_consistency_audit.md)
 
 ---
 
@@ -107,4 +102,4 @@ PY
 | Cross-model signature | Scope-out；Limitations 写 follow-up |
 | Human confirmer | LLM proxy only |
 | Bootstrap CI（主表） | External 脚注有 Wilson；主表仍为 mean±std |
-| Registry fail-open | 已改 tex 措辞；代码仍为 ALLOW |
+| Registry unknown tool | 默认 `conservative_confirm`（2026-09 closeout）；benchmark 均在 registry 内 |

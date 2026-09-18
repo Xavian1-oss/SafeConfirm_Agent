@@ -1,30 +1,31 @@
 # Claim–Evidence Audit (E-P1-6)
 
-**Version:** 0.2.0 · 2026-09-16  
-**Use:** Align Abstract / Intro / Conclusion with available evidence before submission.  
-**Numbers:** [paper_experiment_consistency.md](./paper_experiment_consistency.md)
+**Version:** 0.3.0 · 2026-09-18 (submission pass)  
+**Full audit:** [submission_consistency_audit.md](./submission_consistency_audit.md)  
+**Numbers:** [paper_experiment_consistency.md](./paper_experiment_consistency.md) · `uv run python util_scripts/verify_paper_metrics.py`
 
 | Claim (paper) | Evidence | Risk if over-written | Status |
 |---------------|----------|----------------------|--------|
-| Confirmation laundering occurs under generic confirm | Table 1 confirm rows; Fig. 2 (CLR/SDR) | Implies human-subject study | ☑ diagnostic suite |
-| Equal ASR can hide different authorization quality | Same ASR, different SDR/CLR (vague vs source-aware) | “All agents / all suites” | ☑ workspace confirm ablation |
-| SafeConfirm reduces ASR vs P0 | 28-case paired P0 vs SC (`run_extended_28case.sh`) | Field deployment ASR | ☑ bridge E2E |
-| SafeConfirm preserves utility | Workspace TSR / intervention table | **Banking utility** | ◐ banking TSR ~0 — narrow claim |
-| Beyond handcrafted diagnostic cases | `evidence_20260916_1531` external aggregates (3 seeds) | Statistical generalization | ☑ report as lineage subset |
-| Distinct from provenance-only block/vague | `evidence_20260916_1531/provenance_baselines/*_aggregate.json` | Beat PACT numerically | ☑ 12-case block/vague/rule_v1 |
-| Cross-model robustness | — | “All LLM agents” | — **略过**；勿写 multi-model SOTA |
-| Registry fail-open honesty | `benchmark_registry_coverage.yaml` + spec E-P2-3 | Perfect coverage | ◐ document gaps |
-| Repair helps utility | Repair on/off appendix | Repair always wins | ☐ appendix only |
+| Confirmation laundering under generic confirm | Table 1 RQ1; Fig. 2; CLR 66.7% compliant row | Human-subject study | ☑ channel + LLM confirmer |
+| Equal ASR, different authorization quality | Same ASR, SDR 100% vs 0% (vague vs SA) | All agents / all suites | ☑ 12-case diagnostic |
+| Hierarchy vs contract-style block/vague | Table 1 RQ2 (75 vs 22.2/25 TSR) | Beat PACT numerically | ☑ abstraction wording |
+| SafeConfirm reduces ASR vs P0 | RQ3 workspace/banking + Table 2 external | Field ASR; external SC ≠ 0 | ☑ qualitative + 13/21 vs 2/21 |
+| Workspace utility can improve | 27.3→39.4% TSR | Banking utility | ☑ no banking TSR claim |
+| External lineage without retuning | Table 2, 8 cases, 3 seeds | Wilson as population CI | ☑ descriptive CI footnote |
+| Repair helps utility | Appendix 50 vs 25% TSR | Repair always wins | ☑ RQ4 appendix only |
+| Registry / unknown tools | conservative_confirm in code; benchmarks in registry | Silent allow | ☑ Method + Limitations |
+| Cross-model robustness | — | “All LLM agents” | — scope-out |
+| Native tool_knowledge | native_gen JSON; §discussion-native | SC fixes hijacking | ☑ 9.1% both arms |
 
-## Abstract / Conclusion edits (checklist)
+## Abstract / Conclusion checklist
 
-- [ ] Remove or soften “banking utility” unless benign + corruption TSR improve after H-D fixes.
-- [ ] Say **define / characterize** authorization invariant (E-P1-2), not heavy “formalize”.
-- [ ] External block: “AgentDojo-lineage **external** subset” not “AgentDojo benchmark SOTA”.
-- [x] Cross-model：**不写**第二模型；Limitations 注明 DeepSeek-only + follow-up priority。
-- [x] Generic confirmation（非 human subjects）；registry **fail-open** 表述。
+- [x] No banking utility claim
+- [x] External: “lineage subset” / pattern, not SC ASR = 0 globally
+- [x] Generic confirmation / confirmation channel (not human subjects)
+- [x] No multi-model claim
+- [x] Authorization invariant = design goal, not theorem
 
 ## Metric honesty (E-P1-1)
 
-- SDR/CLR report **N/A** when denominator is zero (code + table footnote).
-- CLR denominator: approved confirmations with **binding authorization gap** only.
+- SDR/CLR **n/a** when denominator zero (table caption + Setup operational rules)
+- CLR: approved in \(\mathcal{R}_{\mathrm{conf}}\) with **gap remaining at approval** (code: `laundering_risk_at_approval`)
