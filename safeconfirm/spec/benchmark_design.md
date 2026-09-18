@@ -57,6 +57,17 @@ Email-style recipient poisoning remains the largest family; v0.4.2 adds BCC, cal
 2. Author **4–8 holdout** cases after freezing `rule_v1` + disclosure templates.
 3. Report holdout paired P0 vs SC **once** — no policy tuning on holdout labels.
 
+## External lineage suite (Goal F / E-P0-1)
+
+| Item | Detail |
+|------|--------|
+| **Cases** | 8 in `benchmark_cases_external.yaml` (AgentDojo `user_tasks.py` lineage tags) |
+| **Suite** | `safeconfirm_workspace_external` (same tools/env as workspace) |
+| **Protocol** | Policy-freeze-v2; **1 model × 3 seeds** paired P0 vs SC; report separately from 28-case diagnostic |
+| **Runner** | `./util_scripts/run_external_eval.sh` |
+
+Diagnostic (28-case) answers mechanism validity; external answers **native-lineage external validity** without tuning `rule_v1` on these cases.
+
 ## Extension targets (E2, optional)
 
 Target **28–32 cases** by filling matrix gaps:

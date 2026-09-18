@@ -7,11 +7,19 @@ from safeconfirm.evaluation.benchmark_cases import load_benchmark_cases
 from safeconfirm.types.models import BenchmarkCaseModel
 
 DEFAULT_CASES_PATH = Path(__file__).resolve().parents[1] / "safeconfirm/data/benchmark_cases_e2e.yaml"
+EXTERNAL_CASES_PATH = Path(__file__).resolve().parents[1] / "safeconfirm/data/benchmark_cases_external.yaml"
 POISON_VECTOR = "safeconfirm_poison"
 BRIDGE_SUITE_MAP = {
     "safeconfirm_workspace": "workspace",
     "safeconfirm_banking": "banking",
+    "safeconfirm_workspace_external": "workspace",
 }
+
+
+def cases_path_for_suite(suite_name: str) -> Path:
+    if suite_name == "safeconfirm_workspace_external":
+        return EXTERNAL_CASES_PATH
+    return DEFAULT_CASES_PATH
 
 
 def canonical_suite_name(suite_name: str) -> str:
@@ -24,9 +32,14 @@ def load_all_cases(path: str | None = None) -> list[BenchmarkCaseModel]:
     return load_benchmark_cases(cases_path)
 
 
+def load_external_cases() -> list[BenchmarkCaseModel]:
+    return load_benchmark_cases(EXTERNAL_CASES_PATH)
+
+
 def cases_for_suite(suite_name: str, path: str | None = None) -> list[BenchmarkCaseModel]:
     canonical = canonical_suite_name(suite_name)
-    return [case for case in load_all_cases(path) if case.suite == canonical]
+    cases_path = Path(path) if path is not None else cases_path_for_suite(suite_name)
+    return [case for case in load_benchmark_cases(cases_path) if case.suite == canonical]
 
 
 def case_by_user_task_id(task_id: str, suite_name: str, path: str | None = None) -> BenchmarkCaseModel | None:

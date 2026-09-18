@@ -29,6 +29,11 @@ def test_banking_case_count() -> None:
     assert len(cases) == 6
 
 
+def test_external_workspace_case_count() -> None:
+    cases = cases_for_suite("safeconfirm_workspace_external")
+    assert len(cases) == 8
+
+
 def test_case_lookup_by_task_id() -> None:
     case = case_by_user_task_id("user_task_0", "safeconfirm_workspace")
     assert case is not None

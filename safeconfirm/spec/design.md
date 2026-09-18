@@ -2,7 +2,7 @@
 
 **版本:** 0.4.3  
 **依赖:** [requirements.md](./requirements.md)  
-**投稿目标:** Goal C/D ☑ — 见 [task.md](./task.md)、[improvement_plan.md](./improvement_plan.md)  
+**投稿目标:** S8 ☑ — 见 [task.md](./task.md)、[evidence_strength_plan.md](./evidence_strength_plan.md)  
 **实验状态:** DeepSeek-only；主表 20-case（`e2e_deepseek_v4_s*`）
 
 ---
@@ -416,6 +416,10 @@ ELSE → ALLOW
 配置 `never_allow_on_untrusted: true` 时，高风险不可信 slot 禁止选 ALLOW。
 
 实验基线: `baseline_allow`, `baseline_block`, `baseline_vague`, `safeconfirm_rule_v1`
+
+**Evidence plan (E-P0-3) paper names:** `provenance_block` = `baseline_block`; `provenance_vague` = `baseline_vague`. Runner: `util_scripts/run_provenance_baselines.sh`.
+
+**Authorization invariant (E-P1-2, paper §2–3):** for each executed call, every binding slot `s` must satisfy user authorization `A_u(s, v)` or trusted re-authorization (repair success or informed confirm + explicit approve). SafeConfirm paths (allow / repair / disclose+confirm / block) are framed as maintaining this invariant—not as a formal theorem.
 
 ### 5.5 Intervention Executor & Confirmer
 

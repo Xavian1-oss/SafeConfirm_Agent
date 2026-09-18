@@ -1,5 +1,7 @@
 # SafeConfirm — 审稿弱点改进计划（Goal D）
 
+> **归档：** Goal D 已完成。活跃维护请用 [evidence_strength_plan.md](./evidence_strength_plan.md) + [paper_experiment_consistency.md](./paper_experiment_consistency.md)。本文档仅作历史记录。
+
 **版本:** 0.1.0  
 **依赖:** [task.md](./task.md), [requirements.md](./requirements.md), [design.md](./design.md)  
 **触发:** AAMAS 2027 模拟审稿（Overall 6.5/10，Weak Accept / Borderline）  

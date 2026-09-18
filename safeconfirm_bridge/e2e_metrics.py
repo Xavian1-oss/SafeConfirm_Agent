@@ -60,8 +60,8 @@ class E2EMetricsModel(BaseModel):
     uar_after_confirm: float = 0.0
     tpr: float
     fbr: float
-    clr: float
-    sdr: float
+    clr: float | None = None
+    sdr: float | None = None
     rsr: float
     vcr: float
     composite: float

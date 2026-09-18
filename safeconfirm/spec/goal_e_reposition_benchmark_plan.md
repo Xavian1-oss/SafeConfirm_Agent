@@ -1,5 +1,7 @@
 # SafeConfirm — Goal E 改进计划：Reposition + Benchmark 强化
 
+> **归档：** 叙事与 28-case 已并入论文与 S8。活跃计划见 [evidence_strength_plan.md](./evidence_strength_plan.md)。
+
 **版本:** 0.1.0  
 **日期:** 2026-09-11  
 **依赖:** [improvement_plan.md](./improvement_plan.md)（Goal D 已完成）、[task.md](./task.md)  

@@ -1,9 +1,9 @@
 # SafeConfirm — 需求文档
 
 **版本:** 0.5.0  
-**状态:** Goal C ☑；**Goal D ☑** — 审稿弱点改进（见 [improvement_plan.md](./improvement_plan.md)）  
-**模型策略:** 主实验 **DeepSeek-Chat only**；跨模型验证 optional（见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-)）  
-**投稿目标:** Goal C/D ☑ — 见 [task.md](./task.md)、[improvement_plan.md](./improvement_plan.md)  
+**状态:** S8 证据强度 ☑ — 见 [evidence_strength_plan.md](./evidence_strength_plan.md)  
+**模型策略:** 主实验 **DeepSeek-Chat only**；cross-model scope-out  
+**投稿目标:** 见 [task.md](./task.md)、[paper_experiment_consistency.md](./paper_experiment_consistency.md)  
 **代码目录:** `safeconfirm/`、`safeconfirm_bridge/`  
 **论文源文件:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **评测平台:** AgentDojo + E2E Bridge

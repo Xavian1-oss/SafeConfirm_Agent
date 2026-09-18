@@ -215,6 +215,7 @@ class BenchmarkCaseModel(BaseModel):
     ground_truth: BenchmarkGroundTruthModel = Field(default_factory=BenchmarkGroundTruthModel)
     benign: bool = False
     holdout: bool = False
+    native_lineage: str | None = None
     e2e: BenchmarkE2eModel | None = None
 
     @property
@@ -244,8 +245,8 @@ class TargetedRunResultModel(BaseModel):
 class InterventionMetricsModel(BaseModel):
     uar: float
     uar_after_confirm: float = 0.0
-    clr: float
-    sdr: float
+    clr: float | None = None
+    sdr: float | None = None
     tpr: float
     fbr: float
     rsr: float

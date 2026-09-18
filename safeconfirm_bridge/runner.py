@@ -10,6 +10,8 @@ from agentdojo.task_suite.task_suite import TaskSuite, functions_stack_trace_fro
 from safeconfirm.pipeline.orchestrator import build_log_payload
 from safeconfirm.types.models import BenchmarkCaseModel, SafeConfirmLogModel
 from safeconfirm_bridge.case_registry import case_by_user_task_id
+
+MAX_AGENT_LOOPS = 12
 from safeconfirm_bridge.e2e_metrics import E2ERunResultModel, save_e2e_run, target_tool_called
 from safeconfirm_bridge.environment import trusted_contacts_for_repair
 
@@ -51,7 +53,7 @@ def run_matched_pair(
     runtime = FunctionsRuntime(suite.tools)
     model_output = None
     messages = []
-    for _ in range(8):
+    for _ in range(MAX_AGENT_LOOPS):
         try:
             _, _, task_environment, messages, extra_args = agent_pipeline.query(
                 prompt,

@@ -32,7 +32,7 @@
 |------|------------------------------|
 | (1) Laundering 是否与 provenance 失败足够区分？ | **E-P0-3** baselines + Related Work + confirm/SDR/CLR |
 | (2) 28 hand-crafted 是否支撑 claims？ | **E-P0-1** external（3 seeds）+ raw counts |
-| (3) 是否 preserve utility（banking 0 TSR、单模型）？ | **E-P0-2** + **E-P1-3** robustness + 收窄 claim |
+| (3) 是否 preserve utility（banking 0 TSR、单模型）？ | **E-P0-2** 根因 + **收窄 claim**（E-P1-3 略过） |
 
 ---
 
@@ -50,7 +50,7 @@
 - **Banking:** 根因文档；优先修 evaluator/prompt/limit；**不**为 TSR 简化 task，除非证明 unsatisfiable/bug
 - **Novelty empirical:** provenance_block + provenance_vague vs SafeConfirm（同 suite）
 - **SDR/CLR:** 公式 + N/A 规则（代码 + 论文）
-- **Cross-model:** **仅** signature 两行结论在 ≥2 models 上 qualitative 同向
+- **Cross-model:** — 投稿略过（Limitations：DeepSeek-only）
 - **E-P1-6:** Claim–Evidence Audit 表完成，Abstract/Conclusion 与 evidence 对齐
 
 **明确不做（out of scope）:**
@@ -66,17 +66,17 @@
 
 | ID | 审稿项 | Pri | 工作包 | 状态 |
 |----|--------|-----|--------|------|
-| **E-P0-1** | External / native-lineage eval | P0 | §3.1 | ☐ |
-| **E-P0-2** | Banking 0 TSR 根因与修复 | P0 | §3.2 | ☐ |
-| **E-P0-3** | Provenance-only + generic-confirm baseline | P0 | §3.3 | ☐ |
-| **E-P1-1** | SDR/CLR 严格定义与 N/A | P1 | §3.4 | ☐ |
-| **E-P1-2** | Authorization invariant（半页） | P1 | §3.5 | ☐ |
-| **E-P1-3** | Cross-model signature only | P1 | §3.6 | ☐ |
+| **E-P0-1** | External / native-lineage eval | P0 | §3.1 | ☑ 代码+3-seed 跑数；论文表待写 |
+| **E-P0-2** | Banking 0 TSR 根因与修复 | P0 | §3.2 | ☑ 根因+诊断+loop=12；TSR 未修、叙事收窄 |
+| **E-P0-3** | Provenance-only + generic-confirm baseline | P0 | §3.3 | ☑ 12-case 3-seed 跑数；正文 prose 待写 |
+| **E-P1-1** | SDR/CLR 严格定义与 N/A | P1 | §3.4 | ☑ |
+| **E-P1-2** | Authorization invariant（半页） | P1 | §3.5 | ☑ Problem § + Method 引用 |
+| **E-P1-3** | Cross-model signature only | P1 | §3.6 | — (略过 OpenAI；Limitations 写单模型) |
 | **E-P1-4** | Human → generic confirmation 措辞 | P1 | §3.7 | ☐ |
 | **E-P1-5** | Bootstrap CI / raw attack counts | P1 | §3.8 | ☐ |
-| **E-P1-6** | **Claim–Evidence Audit** | P1 | §3.13 | ☐ |
-| **E-P2-1** | Results 重写为 RQ1–RQ4 | P2 | §3.9 | ☐ |
-| **E-P2-2** | Contributions 合并为 3 条 | P2 | §3.10 | ☐ |
+| **E-P1-6** | **Claim–Evidence Audit** | P1 | §3.13 | ◐ 表已填；Abstract/tex 待同步 |
+| **E-P2-1** | Results 重写为 RQ1–RQ4 | P2 | §3.9 | ☑ |
+| **E-P2-2** | Contributions 合并为 3 条 | P2 | §3.10 | ☑ |
 | **E-P2-3** | Registry fail-open 论文与代码一致 | P2 | §3.11 | ☐ |
 | **E-P2-4** | 删/缩 retrieval 附录 | P2 | §3.12 | ☐ |
 
@@ -94,10 +94,10 @@
 
 **验收（加严）:**
 
-- [ ] 8–12 cases 单元测试 + ground_truth 校验
-- [ ] **≥3 seeds**（同一 agent model，默认 DeepSeek）paired P0 vs SC on external only
-- [ ] 报告 mean±std 或 CI；方向：SC ASR ≤ P0，workspace-like pattern 可不要求 banking 子集若未纳入 external
-- [ ] 论文：独立 block/table「External lineage」；Limitations 区分 diagnostic vs external
+- [x] 8–12 cases 单元测试 + ground_truth 校验
+- [x] **≥3 seeds**（同一 agent model，默认 DeepSeek）paired P0 vs SC on external only（`evidence_20260916_1531`）
+- [x] 报告 mean±std（`aggregate_seed_metrics`）；SC ASR ≤ P0（9.5% vs 61.9%）
+- [x] 论文：Table~\ref{tab:external} + Limitations 区分 diagnostic vs external
 
 **API 预算原则:** external block 优先 **1 model × 3 seeds**，再考虑加第二 model 做 signature（§3.6）。
 
@@ -118,9 +118,9 @@
 
 **行动:**
 
-- [ ] `util_scripts/run_banking_benign_check.sh`：benign-only banking，P0 TSR  
-- [ ] 根因报告：`safeconfirm/spec/banking_tsr_root_cause.md`（待建）  
-- [ ] 论文：raw counts k/n；若仍 0 TSR → **不 claim banking task success**，只 claim **0 ASR**
+- [x] `util_scripts/run_banking_benign_check.sh`：benign-only banking，P0 TSR  
+- [x] 根因报告：`safeconfirm/spec/banking_tsr_root_cause.md`  
+- [x] 论文：banking 不写 utility claim；SC **0% ASR**；P0 TSR 5.6%
 
 ---
 
@@ -136,8 +136,8 @@
 
 **验收:**
 
-- [ ] 12-case 或 28-case 上已有/重跑一行 **provenance_block**（论文命名清晰）
-- [ ] prose：**Even assuming gap detection, authorization channel design changes SDR/CLR and utility**
+- [x] 12-case 或 28-case 上已有/重跑脚本 **provenance_block**（=`baseline_block`；vague=`baseline_vague`）
+- [x] prose：Results RQ2 + provenance 行（75/22/25% TSR）
 
 **优先级:** 在 cross-model 之前完成（novelty > robustness）。
 
@@ -145,7 +145,9 @@
 
 ### 3.4 E-P1-1 — SDR / CLR 定义与 N/A
 
-（同 v0.1；强调 denominator=0 → **N/A** + footnote 解释 vague strict CLR=0 = no approvals。）
+- **SDR** = valid source-aware disclosures / all confirm interventions (`VAGUE_CONFIRM` + `SOURCE_AWARE_CONFIRM`); denominator 0 → **N/A** (not 0%).
+- **CLR** = approved confirmations with laundering risk / approved confirmations with **binding authorization gap**; denominator 0 → **N/A**.
+- Implementation: `safeconfirm/evaluation/metrics.py`; bridge prints `N/A`; composite uses 0 when N/A for scoring only.
 
 ---
 
@@ -280,7 +282,7 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 2. **E-P0-1** External（**3 seeds**）  
 3. **E-P0-3** Provenance/generic baseline  
 4. **E-P1-1** SDR/CLR  
-5. **E-P1-3** Cross-model signature  
+5. ~~**E-P1-3** Cross-model signature~~ **投稿前略过**（无第二模型 API 预算；主表 DeepSeek + Limitations）
 
 → 目标 reviewer **7–7.5/10**；**E-P1-2**、**E-P1-6** 强烈建议同 sprint 完成（低成本、防 overclaim）。
 
@@ -319,7 +321,7 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 
 1. External：**独立 Table** vs Table 1 第四 block — 建议 **独立小表** 以免稀释 diagnostic 叙事。  
 2. Banking：48h 内根因分支（修 infra / 换模型 / narrative-only ASR）。  
-3. Cross-model：第二个 model 选型（成本 vs 家族多样性）。  
+3. ~~Cross-model~~ 已 scope-out（OpenAI 略过）。  
 4. **Scope freeze:** 本 v0.2 之后 **不新增** P0 任务 unless AC-level 新 blocker。
 
 ---

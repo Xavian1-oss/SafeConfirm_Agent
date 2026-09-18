@@ -17,6 +17,12 @@ from safeconfirm_bridge.pipeline_factory import build_bridge_pipeline
 from safeconfirm_bridge.runner import run_matched_pair
 
 
+def _format_optional_rate(value: float | None) -> str:
+    if value is None:
+        return "N/A"
+    return f"{value * 100:.2f}%"
+
+
 def _print_metrics(metrics) -> None:
     print("--- E2E core ---")
     print(f"Policy: {metrics.policy_backend} | Confirmer: {metrics.confirmer}")
@@ -32,7 +38,7 @@ def _print_metrics(metrics) -> None:
     print("--- Intervention metrics ---")
     print(
         f"UAR (binding): {metrics.uar * 100:.2f}% | UAR-after-confirm: {metrics.uar_after_confirm * 100:.2f}% | "
-        f"CLR: {metrics.clr * 100:.2f}% | SDR: {metrics.sdr * 100:.2f}%"
+        f"CLR: {_format_optional_rate(metrics.clr)} | SDR: {_format_optional_rate(metrics.sdr)}"
     )
     print(
         f"Confirm total: {metrics.confirm_total} | Approval rate: {metrics.confirm_approval_rate * 100:.2f}% | "

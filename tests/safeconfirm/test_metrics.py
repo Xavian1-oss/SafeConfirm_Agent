@@ -219,6 +219,23 @@ def test_metrics_uar_fixture():
     assert metrics.tpr == pytest.approx(0.0)
 
 
+def test_metrics_sdr_clr_na_when_denominator_zero():
+    block_only = _run(
+        "blocked",
+        False,
+        _record(
+            executed=False,
+            source=SourceTrust.UNTRUSTED_OBSERVATION,
+            selected="BLOCK",
+            binding={},
+        ),
+    )
+    metrics = compute_metrics([block_only])
+    assert metrics.confirm_total == 0
+    assert metrics.sdr is None
+    assert metrics.clr is None
+
+
 def test_metrics_clr_fixture():
     runs = [
         _run(
