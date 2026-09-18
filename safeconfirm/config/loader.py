@@ -25,6 +25,7 @@ class SafeConfirmConfig:
     experiences_path: Path
     training_cases_path: Path
     retrieval_top_k: int
+    unknown_tool_policy: str
 
     @classmethod
     def load(cls, config_path: str | Path | None = None) -> SafeConfirmConfig:
@@ -49,6 +50,10 @@ class SafeConfirmConfig:
             experiences_path=experiences,
             training_cases_path=training_cases,
             retrieval_top_k=int(raw.get("retrieval_top_k", 5)),
+            unknown_tool_policy=os.getenv(
+                "SAFECONFIRM_UNKNOWN_TOOL_POLICY",
+                raw.get("unknown_tool_policy", "conservative_confirm"),
+            ),
         )
 
 

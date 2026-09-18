@@ -6,6 +6,7 @@
 
 | 文档 | 用途 |
 |------|------|
+| [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) | **审稿收口 Steps 1–5** — 一致性、CLR 口径、fail-open、baseline 叙事、Table 1 |
 | [evidence_strength_plan.md](./evidence_strength_plan.md) | **S8 证据强度** — 任务状态、MV5、external/provenance/banking |
 | [paper_experiment_consistency.md](./paper_experiment_consistency.md) | **论文 ↔ 实验** 逐表核对与逻辑闭环 |
 | [claim_evidence_audit.md](./claim_evidence_audit.md) | Abstract/Conclusion claim 与 evidence 对齐 |

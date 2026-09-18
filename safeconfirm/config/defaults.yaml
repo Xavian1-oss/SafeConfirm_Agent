@@ -11,3 +11,5 @@ simulated_confirmer: llm_user
 experiences_path: safeconfirm/data/experiences.jsonl
 training_cases_path: safeconfirm/data/seed_training_cases.yaml
 retrieval_top_k: 5
+# allow | conservative_confirm | block — tools missing from slot registry
+unknown_tool_policy: conservative_confirm

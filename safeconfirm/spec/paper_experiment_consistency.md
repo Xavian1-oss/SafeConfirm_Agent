@@ -14,7 +14,8 @@ Problem: authorization gap + generic confirmation can launder bindings
     → vs provenance-only block/vague at same gap detection       [RQ2, Table provenance rows]
     → E2E: P0 vs SafeConfirm on 28 diagnostic + 8 external       [RQ3, Table E2E + tab:external]
     → Repair ablation (utility, not novelty)                       [RQ4, Appendix tab:supp]
-Limitations: DeepSeek-only, LLM confirmer proxy, fail-open registry, no banking utility claim
+Limitations: DeepSeek-only, LLM confirmer proxy, conservative unknown-tool fallback, no banking utility claim
+Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; detector errors upstream)
 ```
 
 **Claim 边界（必须与实验一致）**
@@ -30,6 +31,8 @@ Limitations: DeepSeek-only, LLM confirmer proxy, fail-open registry, no banking 
 ---
 
 ## 2. Table 1 (`tab:results`) 行级来源
+
+**块标签（证据地图）:** RQ1 confirmation quality · RQ2 authorization recovery · RQ3 end-to-end security. SDR/CLR `---` = n/a (block/allow rows or E2E task-level only).
 
 | 论文行 | TSR | ASR | SDR | CLR | Canonical JSON | 脚本 / 批次 |
 |--------|-----|-----|-----|-----|----------------|-------------|

@@ -4,8 +4,10 @@ import pytest
 
 from safeconfirm.evaluation.benchmark_cases import load_benchmark_cases
 from safeconfirm.evaluation.metrics import (
+    binding_gap_remaining,
     compute_metrics,
     executed_with_untrusted_binding,
+    laundering_risk_at_approval,
     merge_safeconfirm_into_benchmark_log,
 )
 from safeconfirm.types.models import (
@@ -237,33 +239,44 @@ def test_metrics_sdr_clr_na_when_denominator_zero():
 
 
 def test_metrics_clr_fixture():
+    gap_approved = _record(
+        executed=True,
+        source=SourceTrust.UNTRUSTED_OBSERVATION,
+        selected=InterventionType.VAGUE_CONFIRM.value,
+        confirmation_response="approved",
+        laundering=True,
+    )
+    gap_cleared = _record(
+        executed=True,
+        source=SourceTrust.TRUSTED_CONTACT,
+        selected=InterventionType.SOURCE_AWARE_CONFIRM.value,
+        confirmation_response="approved",
+        laundering=False,
+        authorization_gap=False,
+        binding={"recipients": ["trusted@example.com"], "subject": "S", "body": "B"},
+    )
+    gap_cleared.has_untrusted_binding = False
+    gap_cleared.slot_records[0].authorization_gap = False
     runs = [
-        _run(
-            "c1",
-            True,
-            _record(
-                executed=True,
-                source=SourceTrust.UNTRUSTED_OBSERVATION,
-                selected=InterventionType.VAGUE_CONFIRM.value,
-                confirmation_response="approved",
-                laundering=True,
-            ),
-        ),
-        _run(
-            "c2",
-            True,
-            _record(
-                executed=True,
-                source=SourceTrust.TRUSTED_CONTACT,
-                selected=InterventionType.SOURCE_AWARE_CONFIRM.value,
-                confirmation_response="approved",
-                laundering=False,
-                binding={"recipients": ["trusted@example.com"], "subject": "S", "body": "B"},
-            ),
-        ),
+        _run("c1", True, gap_approved),
+        _run("c2", True, gap_cleared),
     ]
     metrics = compute_metrics(runs)
     assert metrics.clr == pytest.approx(0.5)
+
+
+def test_laundering_risk_false_after_gap_cleared_on_approval():
+    record = _record(
+        executed=True,
+        source=SourceTrust.TRUSTED_CONTACT,
+        selected=InterventionType.SOURCE_AWARE_CONFIRM.value,
+        confirmation_response="approved",
+        authorization_gap=False,
+        binding={"recipients": ["supervisor@university.edu"], "subject": "S", "body": "B"},
+    )
+    record.slot_records[0].authorization_gap = False
+    assert binding_gap_remaining(record) is False
+    assert laundering_risk_at_approval(record) is False
 
 
 def test_metrics_composite_fixture():

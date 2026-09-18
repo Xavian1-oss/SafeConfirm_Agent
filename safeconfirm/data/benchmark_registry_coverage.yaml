@@ -3,12 +3,13 @@ version: 0.2.0
 # All 28 E2E benchmark target tools are registered in tool_slot_registry.yaml.
 
 unregistered_tool_fallback:
-  current_implementation: ALLOW
+  current_implementation: conservative_confirm
   implementation_note: >-
-    SafeConfirmPipeline.analyze_tool_call returns ALLOW when get_tool_entry is None
-    (safeconfirm/pipeline/orchestrator.py); no slot extraction or confirmation.
+    SafeConfirmConfig.unknown_tool_policy defaults to conservative_confirm:
+    unregistered tools route to SOURCE_AWARE_CONFIRM with executed=False until
+    confirmation resolves (safeconfirm/pipeline/unknown_tool.py).
   requirements_nf5_target: SOURCE_AWARE_CONFIRM_or_BLOCK
-  status: gap_documented_in_limitations
+  status: implemented
 
 suite_registry_coverage:
   workspace:

@@ -11,6 +11,7 @@ from safeconfirm.extraction.slot_extractor import extract_critical_slots, get_to
 from safeconfirm.learning.experience_store import ExperienceStore
 from safeconfirm.policy.candidate_generator import generate_candidates
 from safeconfirm.policy.retrieval_policy import RetrievalPolicy
+from safeconfirm.pipeline.unknown_tool import build_unknown_tool_record
 from safeconfirm.policy.rule_policy import select_intervention
 from safeconfirm.types.models import InterventionRecordModel, InterventionType, SafeConfirmLogModel
 
@@ -32,20 +33,12 @@ class SafeConfirmPipeline:
         trusted_contact_emails: set[str] | None = None,
     ) -> InterventionRecordModel:
         if get_tool_entry(self.registry, tool_call.function) is None:
-            return InterventionRecordModel(
+            return build_unknown_tool_record(
                 tool_call_id=tool_call.id,
                 tool_name=tool_call.function,
                 tool_args=dict(tool_call.args),
-                critical_slots=[],
-                slot_records=[],
-                has_untrusted_binding=False,
-                has_role_only_binding=False,
-                overall_risk=0.0,
-                candidates_considered=[InterventionType.ALLOW.value],
-                selected_intervention=InterventionType.ALLOW.value,
                 policy_backend=self.config.policy_backend,
-                executed=True,
-                executed_binding=dict(tool_call.args),
+                unknown_tool_policy=self.config.unknown_tool_policy,
             )
 
         extraction = extract_critical_slots(tool_call.function, dict(tool_call.args), self.registry)
