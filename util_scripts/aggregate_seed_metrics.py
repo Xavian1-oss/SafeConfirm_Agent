@@ -45,9 +45,14 @@ def aggregate(rows: list[dict]) -> dict:
     for key in METRIC_KEYS:
         values = [float(row[key]) for row in rows if key in row and row[key] is not None]
         if not values:
+            summary[f"{key}_mean"] = None
+            summary[f"{key}_std"] = None
             continue
         summary[f"{key}_mean"] = statistics.mean(values)
         summary[f"{key}_std"] = statistics.pstdev(values) if len(values) > 1 else 0.0
+    approved = [int(row["approved_confirmations"]) for row in rows if "approved_confirmations" in row]
+    if approved:
+        summary["approved_confirmations_total"] = sum(approved)
     return summary
 
 

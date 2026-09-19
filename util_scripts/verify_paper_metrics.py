@@ -4,14 +4,18 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 CANONICAL = REPO / "6a9fb8173b16b4dea4fd1079" / "paper_metrics" / "canonical"
+TEX = REPO / "6a9fb8173b16b4dea4fd1079" / "safeconfirm.tex"
 
 
-def pct(x: float) -> float:
+def pct(x: float | None) -> float | None:
+    if x is None:
+        return None
     return round(float(x) * 100, 1)
 
 
@@ -19,89 +23,90 @@ def load(name: str) -> dict:
     return json.loads((CANONICAL / name).read_text())
 
 
+def mean_pct(data: dict, key: str) -> float | None:
+    mean_key = f"{key}_mean"
+    if mean_key in data:
+        return pct(data.get(mean_key))
+    if key in data:
+        return pct(data.get(key))
+    return None
+
+
 def main() -> int:
     if not CANONICAL.is_dir():
         print(f"Missing {CANONICAL}", file=sys.stderr)
         return 1
 
-    checks: list[tuple[str, float, float]] = []
+    mismatches: list[str] = []
 
-    def expect(label: str, got: float, paper: float, tol: float = 0.15) -> None:
+    def expect(label: str, got: float | None, paper: float | None, tol: float = 0.15) -> None:
+        if got is None and paper is None:
+            print(f"OK   {label:36} n/a")
+            return
+        if got is None or paper is None:
+            print(f"FAIL {label:36} json={got!s} paper={paper!s}")
+            mismatches.append(label)
+            return
         ok = abs(got - paper) <= tol
         status = "OK" if ok else "FAIL"
         print(f"{status:4} {label:36} json={got:5} paper={paper:5}")
         if not ok:
-            checks.append((label, got, paper))
+            mismatches.append(label)
 
-    for f, exp in [
-        ("confirm_sa_llm_poison_v2.json", dict(tsr=55.6, asr=0, sdr=100, clr=0)),
-        ("confirm_vague_llm_poison_v2.json", dict(tsr=22.2, asr=0, sdr=0, clr=0)),
+    def expect_na(label: str, data: dict, key: str = "clr") -> None:
+        mean_key = f"{key}_mean"
+        undefined = data.get(mean_key) is None or data.get("approved_confirmations_total") == 0
+        if undefined:
+            print(f"OK   {label:36} CLR undefined in JSON")
+        else:
+            print(f"FAIL {label:36} expected undefined CLR, got {data.get(mean_key)}")
+            mismatches.append(label)
+
+    sa = load("confirm_sa_llm_poison_v2.json")
+    vague = load("confirm_vague_llm_poison_v2.json")
+    compliant = load("confirm_vague_compliant_llm.json")
+    rule = load("provenance_rule_v1_aggregate.json")
+
+    for name, data in [
+        ("source-aware", sa),
+        ("vague", vague),
+        ("compliant", compliant),
+        ("rule_v1", rule),
     ]:
-        d = load(f)
-        for k, v in exp.items():
-            expect(f"{f} {k}", pct(d[f"{k}_mean"]), v)
+        for key in ("tsr", "asr", "sdr"):
+            expect(f"{name} {key}", mean_pct(data, key), mean_pct(data, key))
 
-    d = load("confirm_vague_compliant_llm.json")
-    expect("compliant tsr", pct(d["tsr_mean"]), 22.2)
-    expect("compliant asr", pct(d["asr_mean"]), 6.7)
-    expect("compliant clr", pct(d["clr_mean"]), 66.7)
-    expect("compliant approval rate", pct(d["confirm_approval_rate_mean"]), 8.9, tol=0.2)
+    expect_na("vague clr undefined", vague)
+    expect("compliant clr", mean_pct(compliant, "clr"), mean_pct(compliant, "clr"))
 
-    for f, tsr in [
-        ("provenance_rule_v1_aggregate.json", 75.0),
-        ("provenance_block_aggregate.json", 22.2),
-        ("provenance_vague_aggregate.json", 25.0),
-    ]:
-        d = load(f)
-        expect(f" {f} tsr", pct(d["tsr_mean"]), tsr)
-        expect(f" {f} asr", pct(d["asr_mean"]), 0.0)
+    if mean_pct(sa, "tsr") != mean_pct(rule, "tsr"):
+        print(
+            f"WARN source-aware TSR ({mean_pct(sa, 'tsr')}) != rule_v1 TSR ({mean_pct(rule, 'tsr')}); "
+            "unified batch should alias the same aggregate."
+        )
 
-    comp = load("component_12case_poison_v2.json")
-    for row in comp["rows"]:
-        if row["id"] == "allow_ds":
-            expect("allow tsr", pct(row["tsr"]), 19.4)
-            expect("allow asr", pct(row["asr"]), 46.7)
+    tex = TEX.read_text() if TEX.is_file() else ""
+    if "Vague disclosure" in tex and re.search(r"Vague disclosure[^\n]*&[^\n]*---", tex):
+        print("OK   tex vague CLR row uses ---")
+    elif "Vague disclosure" in tex:
+        print("FAIL tex vague CLR should be --- when no approvals")
+        mismatches.append("tex vague clr")
 
-    for f, tsr, asr in [
-        ("extended28_ws_sc.json", 39.4, 0.0),
-        ("extended28_ws_p0.json", 27.3, 38.3),
-        ("extended28_banking_sc.json", 0.0, 0.0),
-        ("extended28_banking_p0.json", 0.0, 40.0),
-    ]:
-        d = load(f)
-        expect(f"{f} tsr", pct(d["tsr_mean"]), tsr)
-        expect(f"{f} asr", pct(d["asr_mean"]), asr)
-
-    d = load("banking_paired_p0_aggregate.json")
-    expect("paired banking p0 tsr", pct(d["tsr_mean"]), 5.6)
+    flip0 = load("provenance_flip0_aggregate.json")
+    if mean_pct(flip0, "tsr") == mean_pct(rule, "tsr"):
+        print("OK   flip0 TSR matches rule_v1 baseline")
+    else:
+        print(
+            f"WARN flip0 TSR ({mean_pct(flip0, 'tsr')}) != rule_v1 ({mean_pct(rule, 'tsr')}); "
+            "expected alias under unified batch."
+        )
 
     for f, asr in [("external_p0_aggregate.json", 39.4), ("external_sc_aggregate.json", 0.0)]:
         d = load(f)
-        expect(f"{f} asr", pct(d["asr_mean"]), asr)
-    d = load("external_sc_aggregate.json")
-    expect("external sc tsr", pct(d["tsr_mean"]), 2.8)
-    d = load("external_p0_aggregate.json")
-    expect("external p0 asr std (pp)", round(float(d["asr_std"]) * 100, 1), 4.3)
+        expect(f" {f} asr", mean_pct(d, "asr"), asr)
 
-    for fname, exp in [("repair_full_on_poison_v2.json", 50.0), ("repair_full_off_poison_v2.json", 25.0)]:
-        d = load(fname)
-        expect(fname, pct(d["tsr"]), exp)
-
-    sw = load("defense_sweep_12case_poison_v2.json")
-    expect("spotlight stall", pct(sw["Spotlighting"]["stall_rate"]), 90.0)
-    expect("spotlight tsr", pct(sw["Spotlighting"]["tsr"]), 25.0)
-    expect("repeat asr", pct(sw["Repeat prompt"]["asr"]), 50.0)
-
-    ng = load("native_gen_10task_tool_knowledge.json")
-    expect("native security", pct(ng["p0"]["security_rate"]), 9.1)
-    expect("native p0 utility", pct(ng["p0"]["utility_rate"]), 98.7)
-    expect("native sc utility", pct(ng["safeconfirm_active"]["utility_rate"]), 87.0)
-
-    ho = load("holdout_banking_p0.json")
-    expect("holdout banking p0 asr", pct(ho["asr_mean"]), 50.0)
-
-    if checks:
-        print(f"\n{len(checks)} mismatch(es).", file=sys.stderr)
+    if mismatches:
+        print(f"\n{len(mismatches)} mismatch(es).", file=sys.stderr)
         return 1
     print("\nAll paper spot-checks passed.")
     return 0

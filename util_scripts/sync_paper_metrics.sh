@@ -21,6 +21,24 @@ copy_if() {
 
 echo "Syncing paper metrics -> ${DEST}"
 
+UNIFIED="${UNIFIED_12CASE_BATCH:-}"
+if [[ -n "${UNIFIED}" && -f "runs/bridge/${UNIFIED}/rule_v1_aggregate.json" ]]; then
+  UB="runs/bridge/${UNIFIED}"
+  echo "Using unified 12-case batch: ${UNIFIED}"
+  copy_if "${UB}/rule_v1_aggregate.json" "${CANON}/confirm_sa_llm_poison_v2.json"
+  copy_if "${UB}/rule_v1_aggregate.json" "${CANON}/provenance_rule_v1_aggregate.json"
+  copy_if "${UB}/baseline_vague_aggregate.json" "${CANON}/confirm_vague_llm_poison_v2.json"
+  copy_if "${UB}/baseline_vague_aggregate.json" "${CANON}/provenance_vague_aggregate.json"
+  copy_if "${UB}/baseline_block_aggregate.json" "${CANON}/provenance_block_aggregate.json"
+  copy_if "${UB}/vague_compliant_aggregate.json" "${CANON}/confirm_vague_compliant_llm.json"
+  copy_if "${UB}/repair_on_aggregate.json" "${CANON}/repair_full_on_poison_v2.json"
+  copy_if "${UB}/repair_off_aggregate.json" "${CANON}/repair_full_off_poison_v2.json"
+  copy_if "${UB}/flip0_aggregate.json" "${CANON}/provenance_flip0_aggregate.json"
+  copy_if "${UB}/flip005_aggregate.json" "${CANON}/provenance_flip005_aggregate.json"
+  copy_if "${UB}/flip010_aggregate.json" "${CANON}/provenance_flip010_aggregate.json"
+  copy_if "${UB}/flip020_aggregate.json" "${CANON}/provenance_flip020_aggregate.json"
+fi
+
 # --- Primary E2E (28-case + holdout) ---
 copy_if runs/bridge/e2e_extended_extend_v1_20260911/safeconfirm_workspace_p0_aggregate.json "${CANON}/extended28_ws_p0.json"
 copy_if runs/bridge/e2e_extended_extend_v1_20260911/safeconfirm_workspace_sc_aggregate.json "${CANON}/extended28_ws_sc.json"
@@ -31,7 +49,8 @@ copy_if runs/bridge/holdout_holdout_v1_20260911/safeconfirm_workspace_sc_aggrega
 copy_if runs/bridge/holdout_holdout_v1_20260911/safeconfirm_banking_p0_aggregate.json "${CANON}/holdout_banking_p0.json"
 copy_if runs/bridge/holdout_holdout_v1_20260911/safeconfirm_banking_sc_aggregate.json "${CANON}/holdout_banking_sc.json"
 
-# --- 12-case mechanism ablations (v0.4.2 poison-v2) ---
+# --- 12-case mechanism ablations (v0.4.2 poison-v2; skipped when UNIFIED_12CASE_BATCH set) ---
+if [[ -z "${UNIFIED}" || ! -f "runs/bridge/${UNIFIED}/rule_v1_aggregate.json" ]]; then
 copy_if runs/bridge/component_ablation_poison_v2_20260910/summary.json "${CANON}/component_12case_poison_v2.json"
 copy_if runs/bridge/confirm_ablation_poison_v2_20260910/sa_llm_aggregate.json "${CANON}/confirm_sa_llm_poison_v2.json"
 copy_if runs/bridge/confirm_ablation_poison_v2_20260910/vague_llm_aggregate.json "${CANON}/confirm_vague_llm_poison_v2.json"
@@ -39,6 +58,7 @@ copy_if runs/bridge/confirm_ablation_v4/vague_compliant_llm_aggregate.json "${CA
 copy_if runs/bridge/e2e_ds_poison_v2_20260910_defense_comparison.json "${CANON}/defense_sweep_12case_poison_v2.json"
 copy_if runs/bridge/ablation_repair_poison_v2_20260910/on/safeconfirm_workspace/metrics.json "${CANON}/repair_full_on_poison_v2.json"
 copy_if runs/bridge/ablation_repair_poison_v2_20260910/off/safeconfirm_workspace/metrics.json "${CANON}/repair_full_off_poison_v2.json"
+fi
 copy_if runs/bridge/ablation_repair_subset_poison_v2_20260910/on/safeconfirm_workspace/metrics.json "${CANON}/repair_subset_on_poison_v2.json"
 copy_if runs/bridge/ablation_repair_subset_poison_v2_20260910/off/safeconfirm_workspace/metrics.json "${CANON}/repair_subset_off_poison_v2.json"
 copy_if runs/bridge/e2e_retrieval_poison_v2_20260910/rule_v1/safeconfirm_workspace/metrics.json "${CANON}/retrieval_rule_v1_poison_v2.json"
@@ -64,6 +84,7 @@ else
 fi
 copy_if "${EVID}/banking_paired/p0_aggregate.json" "${CANON}/banking_paired_p0_aggregate.json"
 copy_if "${EVID}/banking_paired/sc_aggregate.json" "${CANON}/banking_paired_sc_aggregate.json"
+if [[ -z "${UNIFIED}" || ! -f "runs/bridge/${UNIFIED}/rule_v1_aggregate.json" ]]; then
 copy_if "${EVID}/provenance_baselines/baseline_block_aggregate.json" "${CANON}/provenance_block_aggregate.json"
 copy_if "${EVID}/provenance_baselines/baseline_vague_aggregate.json" "${CANON}/provenance_vague_aggregate.json"
 copy_if "${EVID}/provenance_baselines/rule_v1_aggregate.json" "${CANON}/provenance_rule_v1_aggregate.json"
@@ -72,6 +93,7 @@ PROV_FLIP="runs/bridge/provenance_sensitivity/prov_flip_20260919"
 for tag in flip0 flip005 flip010 flip020; do
   copy_if "${PROV_FLIP}/${tag}_aggregate.json" "${CANON}/provenance_${tag}_aggregate.json"
 done
+fi
 
 # --- Legacy (pre-28-case primary / superseded aggregates) ---
 copy_if runs/bridge/e2e_deepseek_v4_workspace_aggregate.json "${LEGACY}/main_v4_workspace.json"
@@ -88,5 +110,8 @@ copy_if runs/bridge/e2e_p0_v3_aggregate.json "${LEGACY}/p0_v3_12case.json"
 copy_if runs/bridge/paired_security_poison_v2_20260910/p0_aggregate.json "${LEGACY}/paired_p0_12case_poison_v2.json"
 copy_if runs/bridge/paired_security_poison_v2_20260910/sc_aggregate.json "${LEGACY}/paired_sc_12case_poison_v2.json"
 copy_if runs/bridge/paired_security_poison_v2_20260910/paired_comparison.json "${LEGACY}/paired_comparison_poison_v2.json"
+
+echo "Regenerating RQ1 bar chart from canonical JSON..."
+uv run python util_scripts/generate_rq1_bar_chart.py
 
 echo "Done."
