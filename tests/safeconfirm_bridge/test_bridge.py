@@ -31,7 +31,7 @@ def test_banking_case_count() -> None:
 
 def test_external_workspace_case_count() -> None:
     cases = cases_for_suite("safeconfirm_workspace_external")
-    assert len(cases) == 8
+    assert len(cases) == 12
 
 
 def test_case_lookup_by_task_id() -> None:
