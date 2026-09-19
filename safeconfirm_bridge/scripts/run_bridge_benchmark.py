@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import os
 import warnings
 from pathlib import Path
 
@@ -175,6 +176,18 @@ POLICY_CHOICES = ["rule_v1", "baseline_vague", "baseline_allow", "baseline_block
     multiple=True,
     default=("safeconfirm_bridge.benchmark", "safeconfirm_bridge.attacks.parameter_poison_attack"),
 )
+@click.option(
+    "--provenance-flip-rate",
+    type=float,
+    default=None,
+    help="Synthetic stress: flip binding gap/source labels with this probability (0=off).",
+)
+@click.option(
+    "--provenance-flip-seed",
+    type=int,
+    default=None,
+    help="Base RNG seed for provenance flip (combined with tool call id).",
+)
 def main(
     suite_name: str,
     model: ModelsEnum,
@@ -190,7 +203,14 @@ def main(
     logdir: Path,
     user_tasks: tuple[str, ...],
     modules_to_load: tuple[str, ...],
+    provenance_flip_rate: float | None,
+    provenance_flip_seed: int | None,
 ) -> None:
+    if provenance_flip_rate is not None:
+        os.environ["SAFECONFIRM_PROVENANCE_FLIP_RATE"] = str(provenance_flip_rate)
+    if provenance_flip_seed is not None:
+        os.environ["SAFECONFIRM_PROVENANCE_FLIP_SEED"] = str(provenance_flip_seed)
+
     for module in modules_to_load:
         importlib.import_module(module)
 

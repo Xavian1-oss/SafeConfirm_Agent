@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import random
 from typing import Any
 
 from agentdojo.functions_runtime import FunctionCall
 from agentdojo.types import ChatMessage
+from safeconfirm.analysis.provenance_stress import apply_provenance_label_flip
 from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
@@ -50,6 +52,15 @@ class SafeConfirmPipeline:
             risk_threshold=self.config.risk_threshold_confirm,
             trusted_contact_emails=trusted_contact_emails,
         )
+        if self.config.provenance_flip_rate > 0.0:
+            seed = self.config.provenance_flip_seed
+            if tool_call.id:
+                seed = seed ^ hash(tool_call.id) & 0xFFFFFFFF
+            apply_provenance_label_flip(
+                analysis,
+                self.config.provenance_flip_rate,
+                random.Random(seed),
+            )
         candidates = generate_candidates(
             analysis,
             self.registry,

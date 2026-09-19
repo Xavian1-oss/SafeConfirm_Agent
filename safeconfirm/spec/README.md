@@ -9,6 +9,7 @@
 | [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) | **审稿收口 Steps 1–5** — 一致性、CLR 口径、fail-open、baseline 叙事、Table 1 |
 | [evidence_strength_plan.md](./evidence_strength_plan.md) | **S8 证据强度** — 任务状态、MV5、external/provenance/banking |
 | [paper_experiment_consistency.md](./paper_experiment_consistency.md) | **论文 ↔ 实验** 逐表核对与逻辑闭环 |
+| [post_submission_experiment_plan.md](./post_submission_experiment_plan.md) | **投稿后实验加强**（external / sensitivity / banking 诊断 / 最后 cross-model） |
 | [submission_consistency_audit.md](./submission_consistency_audit.md) | **提交前** 全文 consistency + claim–evidence 审计 |
 | [claim_evidence_audit.md](./claim_evidence_audit.md) | Claim 索引（与 submission audit 同步） |
 | [benchmark_design.md](./benchmark_design.md) | 28 diagnostic + 8 external 双轨、脚本入口 |

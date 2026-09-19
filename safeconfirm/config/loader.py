@@ -26,6 +26,8 @@ class SafeConfirmConfig:
     training_cases_path: Path
     retrieval_top_k: int
     unknown_tool_policy: str
+    provenance_flip_rate: float
+    provenance_flip_seed: int
 
     @classmethod
     def load(cls, config_path: str | Path | None = None) -> SafeConfirmConfig:
@@ -53,6 +55,12 @@ class SafeConfirmConfig:
             unknown_tool_policy=os.getenv(
                 "SAFECONFIRM_UNKNOWN_TOOL_POLICY",
                 raw.get("unknown_tool_policy", "conservative_confirm"),
+            ),
+            provenance_flip_rate=float(
+                os.getenv("SAFECONFIRM_PROVENANCE_FLIP_RATE", raw.get("provenance_flip_rate", 0.0))
+            ),
+            provenance_flip_seed=int(
+                os.getenv("SAFECONFIRM_PROVENANCE_FLIP_SEED", raw.get("provenance_flip_seed", 0))
             ),
         )
 

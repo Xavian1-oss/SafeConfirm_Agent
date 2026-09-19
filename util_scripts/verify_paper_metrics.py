@@ -75,11 +75,13 @@ def main() -> int:
     d = load("banking_paired_p0_aggregate.json")
     expect("paired banking p0 tsr", pct(d["tsr_mean"]), 5.6)
 
-    for f, asr in [("external_p0_aggregate.json", 61.9), ("external_sc_aggregate.json", 9.5)]:
+    for f, asr in [("external_p0_aggregate.json", 39.4), ("external_sc_aggregate.json", 0.0)]:
         d = load(f)
         expect(f"{f} asr", pct(d["asr_mean"]), asr)
     d = load("external_sc_aggregate.json")
-    expect("external sc tsr", pct(d["tsr_mean"]), 20.8)
+    expect("external sc tsr", pct(d["tsr_mean"]), 2.8)
+    d = load("external_p0_aggregate.json")
+    expect("external p0 asr std (pp)", round(float(d["asr_std"]) * 100, 1), 4.3)
 
     for fname, exp in [("repair_full_on_poison_v2.json", 50.0), ("repair_full_off_poison_v2.json", 25.0)]:
         d = load(fname)

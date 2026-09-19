@@ -16,7 +16,7 @@ def load_bridge_modules() -> None:
 
 def test_external_cases_load() -> None:
     cases = load_benchmark_cases(EXTERNAL_CASES_PATH)
-    assert 8 <= len(cases) <= 12
+    assert 12 <= len(cases) <= 16
 
 
 def test_external_suite_registration() -> None:
@@ -37,6 +37,15 @@ def test_external_ground_truth_labels() -> None:
         else:
             assert "ALLOW" in gt.unsafe_interventions
             assert "VAGUE_CONFIRM" in gt.laundering_interventions
+
+
+def test_external_tool_and_slot_diversity() -> None:
+    cases = load_benchmark_cases(EXTERNAL_CASES_PATH)
+    tools = {case.tool_name for case in cases}
+    slots = {next(iter(case.corrupted_slots.keys()), None) for case in cases if case.corrupted_slots}
+    slots.discard(None)
+    assert len(tools) >= 4
+    assert len(slots) >= 5
 
 
 def test_external_suite_checks() -> None:

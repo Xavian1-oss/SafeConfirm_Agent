@@ -9,7 +9,7 @@
 | Confirmation laundering under generic confirm | Table 1 RQ1; Fig. 2; CLR 66.7% compliant row | Human-subject study | ☑ channel + LLM confirmer |
 | Equal ASR, different authorization quality | Same ASR, SDR 100% vs 0% (vague vs SA) | All agents / all suites | ☑ 12-case diagnostic |
 | Hierarchy vs contract-style block/vague | Table 1 RQ2 (75 vs 22.2/25 TSR) | Beat PACT numerically | ☑ abstraction wording |
-| SafeConfirm reduces ASR vs P0 | RQ3 workspace/banking + Table 2 external | Field ASR; external SC ≠ 0 | ☑ qualitative + 13/21 vs 2/21 |
+| SafeConfirm reduces ASR vs P0 | RQ3 workspace/banking + Table 2 external | Field ASR; small lineage set | ☑ qualitative + 13/33 vs 0/33 |
 | Workspace utility can improve | 27.3→39.4% TSR | Banking utility | ☑ no banking TSR claim |
 | External lineage without retuning | Table 2, 8 cases, 3 seeds | Wilson as population CI | ☑ descriptive CI footnote |
 | Repair helps utility | Appendix 50 vs 25% TSR | Repair always wins | ☑ RQ4 appendix only |

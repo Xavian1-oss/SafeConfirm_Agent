@@ -12,7 +12,7 @@
 Problem: authorization gap + generic confirmation can launder bindings
     → Metrics: SDR/CLR (same ASR, different channel quality)     [RQ1, Table confirm]
     → vs provenance-only block/vague at same gap detection       [RQ2, Table provenance rows]
-    → E2E: P0 vs SafeConfirm on 28 diagnostic + 8 external       [RQ3, Table E2E + tab:external]
+    → E2E: P0 vs SafeConfirm on 28 diagnostic + external lineage [RQ3, Table E2E + tab:external]
     → Repair ablation (utility, not novelty)                       [RQ4, Appendix tab:supp]
 Limitations: DeepSeek-only, LLM confirmer proxy, conservative unknown-tool fallback, no banking utility claim
 Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; detector errors upstream)
@@ -23,10 +23,10 @@ Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; 
 | Claim | 支持 | 禁止写 |
 |-------|------|--------|
 | Laundering / SDR–CLR | 12-case confirm ablation | Human subjects 已证 |
-| ASR ↓ vs P0 | extended28 workspace + external 8 | Field ASR / 全 settings |
+| ASR ↓ vs P0 | extended28 workspace + external lineage (12 cases post-E1) | Field ASR / 全 settings |
 | Provenance vs hierarchy | provenance baselines Sep.~2026 | Beat PACT 数值 |
 | Banking security | extended28 + paired: SC ASR 0% | Banking TSR / utility |
-| External validity | 8 lineage, 3 seeds, 13/21→2/21 pooled | “Robust prevention” / SC ASR=0 |
+| External validity | 12 lineage, 3 seeds, 13/33→0/33 pooled | “Robust prevention” / field ASR |
 
 ---
 
@@ -65,11 +65,29 @@ Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; 
 
 | 字段 | 论文 | JSON | 备注 |
 |------|------|------|------|
-| P0 ASR | 61.9 ± 6.7 | `external_p0_aggregate.json` | 7 corruption / seed |
-| SC ASR | 9.5 ± 6.7 | `external_sc_aggregate.json` | 非 0%，叙事用 qualitative pattern |
-| Pooled attacks | 13/21 vs 2/21 | 手算自 `evidence_20260916_1531/p0_s*` / `sc_s*` | Wilson CI 见 tex 脚注 |
+| P0 ASR | 39.4 ± 4.3 | `external_p0_aggregate.json` | 11 corruption / seed |
+| SC TSR | 2.8 ± 3.9 | `external_sc_aggregate.json` | |
+| SC ASR | 0.0 ± 0.0 | `external_sc_aggregate.json` | 12-case batch；叙事仍为 qualitative pattern |
+| Pooled attacks | 13/33 vs 0/33 | `runs/bridge/external_v2_12case_20260919/p0_s*` / `sc_s*` | Wilson [25–56%] / [0–10%] |
 
-脚本：`run_external_eval.sh` · 用例：`benchmark_cases_external.yaml`
+脚本：`run_external_eval.sh` · batch `runs/bridge/external_v2_12case_20260919/` · 用例：`benchmark_cases_external.yaml`（12 cases）
+
+## 3b. Provenance label-flip (`tab:prov-flip`)
+
+| Flip $p$ | TSR / ASR (mean±std) | JSON |
+|----------|---------------------|------|
+| 0 | 61.1±10.4 / 0.0 | `provenance_flip0_aggregate.json` |
+| 0.05 | 47.2±3.9 / 13.3 | `provenance_flip005_aggregate.json` |
+| 0.10 | 36.1±3.9 / 13.3 | `provenance_flip010_aggregate.json` |
+| 0.20 | 25.0±6.8 / 40.0 | `provenance_flip020_aggregate.json` |
+
+脚本：`run_provenance_sensitivity.sh` · batch `prov_flip_20260919` · 汇总 `summarize_provenance_flip_batch.py`
+
+## 3c. Banking benign diagnostic (E3)
+
+| Run | Path | 结论 |
+|-----|------|------|
+| P0 `user_task_5` s0 | `runs/bridge/banking_benign_check/p0_s0/` | TSR 0%, no `send_money` — planner 瓶颈 |
 
 ---
 

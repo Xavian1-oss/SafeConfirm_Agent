@@ -44,6 +44,9 @@ def config(tmp_path):
         experiences_path=tmp_path / "experiences.jsonl",
         training_cases_path=TRAINING_CASES_PATH,
         retrieval_top_k=5,
+        unknown_tool_policy=base.unknown_tool_policy,
+        provenance_flip_rate=0.0,
+        provenance_flip_seed=0,
     )
 
 

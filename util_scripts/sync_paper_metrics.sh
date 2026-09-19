@@ -54,13 +54,24 @@ copy_if runs/native_gen/ds_10task_v1/summary.json "${CANON}/native_gen_10task_to
 
 # --- Evidence strength batch (Sep. 2026) ---
 EVID="runs/bridge/evidence_20260916_1531"
-copy_if "${EVID}/p0_aggregate.json" "${CANON}/external_p0_aggregate.json"
-copy_if "${EVID}/sc_aggregate.json" "${CANON}/external_sc_aggregate.json"
+EXT_V2="runs/bridge/external_v2_12case_20260919"
+if [[ -f "${EXT_V2}/p0_aggregate.json" ]]; then
+  copy_if "${EXT_V2}/p0_aggregate.json" "${CANON}/external_p0_aggregate.json"
+  copy_if "${EXT_V2}/sc_aggregate.json" "${CANON}/external_sc_aggregate.json"
+else
+  copy_if "${EVID}/p0_aggregate.json" "${CANON}/external_p0_aggregate.json"
+  copy_if "${EVID}/sc_aggregate.json" "${CANON}/external_sc_aggregate.json"
+fi
 copy_if "${EVID}/banking_paired/p0_aggregate.json" "${CANON}/banking_paired_p0_aggregate.json"
 copy_if "${EVID}/banking_paired/sc_aggregate.json" "${CANON}/banking_paired_sc_aggregate.json"
 copy_if "${EVID}/provenance_baselines/baseline_block_aggregate.json" "${CANON}/provenance_block_aggregate.json"
 copy_if "${EVID}/provenance_baselines/baseline_vague_aggregate.json" "${CANON}/provenance_vague_aggregate.json"
 copy_if "${EVID}/provenance_baselines/rule_v1_aggregate.json" "${CANON}/provenance_rule_v1_aggregate.json"
+
+PROV_FLIP="runs/bridge/provenance_sensitivity/prov_flip_20260919"
+for tag in flip0 flip005 flip010 flip020; do
+  copy_if "${PROV_FLIP}/${tag}_aggregate.json" "${CANON}/provenance_${tag}_aggregate.json"
+done
 
 # --- Legacy (pre-28-case primary / superseded aggregates) ---
 copy_if runs/bridge/e2e_deepseek_v4_workspace_aggregate.json "${LEGACY}/main_v4_workspace.json"

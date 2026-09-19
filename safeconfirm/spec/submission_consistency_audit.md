@@ -3,7 +3,7 @@
 **Date:** 2026-09-18  
 **Paper:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **Numbers:** `6a9fb8173b16b4dea4fd1079/paper_metrics/canonical/`  
-**Automated check:** `uv run python util_scripts/verify_paper_metrics.py` → **40/40 OK** (this run)
+**Automated check:** `uv run python util_scripts/verify_paper_metrics.py` → **41/41 OK** after 12-case external sync (2026-09-19)
 
 ---
 
@@ -30,9 +30,9 @@
 | C1 | Confirmation laundering exists (Abstract, RQ1) | Table 1 RQ1; Fig. 2; compliant row CLR 66.7% | Implies human users | ☑ LLM confirmer + channel wording |
 | C2 | Same ASR, different authorization quality (SDR/CLR) | SA vs vague 0% ASR, 100% vs 0% SDR | All agents / all suites | ☑ 12-case diagnostic |
 | C3 | Recovery hierarchy beats contract-style block/vague (RQ2) | rule_v1 75% TSR vs block 22.2% / vague 25% | Beats PACT numerically | ☑ abstraction language in Setup |
-| C4 | SafeConfirm reduces ASR vs P0 (RQ3) | Workspace 38.3→0%; banking 40→0%; external 61.9→9.5% | Field ASR; SC external ≠ 0 | ☑ qualitative + raw counts |
+| C4 | SafeConfirm reduces ASR vs P0 (RQ3) | Workspace 38.3→0%; banking 40→0%; external 39.4→0% (12-case) | Field ASR; small lineage set | ☑ qualitative + 13/33 vs 0/33 |
 | C5 | Workspace utility can improve | 27.3→39.4% TSR | Banking utility | ☑ no banking TSR claim |
-| C6 | External lineage without retuning | Table 2; 13/21→2/21 | Independent-case CI | ☑ Wilson = descriptive only |
+| C6 | External lineage without retuning | Table 2; 13/33→0/33 (12-case) | Independent-case CI | ☑ Wilson = descriptive only |
 | C7 | Repair helps TSR (RQ4) | Appendix 25→50%, ASR 0 | Always wins | ☑ appendix only |
 | C8 | Prompt defenses mixed | Related: spotlight stall 90%; appendix TSR 25% | “90% TSR” | ☑ stall_rate not TSR |
 | C9 | Native tool_knowledge not fixed | §discussion-native 9.1% security both | SC replaces prompt defense | ☑ stated |
@@ -56,10 +56,10 @@
 
 | Field | Paper | JSON |
 |-------|-------|------|
-| P0 ASR | 61.9 ± 6.7 | `external_p0_aggregate.json` |
-| SC ASR | 9.5 ± 6.7 | `external_sc_aggregate.json` |
-| SC TSR | 20.8 ± 5.9 | same |
-| Pooled | 13/21 vs 2/21 | 7 corruption × 3 seeds |
+| P0 ASR | 39.4 ± 4.3 | `external_p0_aggregate.json` |
+| SC ASR | 0.0 ± 0.0 | `external_sc_aggregate.json` |
+| SC TSR | 2.8 ± 3.9 | same |
+| Pooled | 13/33 vs 0/33 | 11 corruption × 3 seeds |
 
 ### Appendix
 

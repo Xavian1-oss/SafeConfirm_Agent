@@ -13,3 +13,6 @@ training_cases_path: safeconfirm/data/seed_training_cases.yaml
 retrieval_top_k: 5
 # allow | conservative_confirm | block — tools missing from slot registry
 unknown_tool_policy: conservative_confirm
+# Synthetic provenance-label flip rate for sensitivity runs (0 = off)
+provenance_flip_rate: 0.0
+provenance_flip_seed: 0

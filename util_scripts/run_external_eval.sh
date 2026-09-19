@@ -5,8 +5,9 @@ cd "$(dirname "$0")/.."
 
 MODEL="${MODEL:-deepseek-chat}"
 SEEDS="${SEEDS:-s0 s1 s2}"
-BATCH_ID="${BATCH_ID:-external_v1_$(date +%Y%m%d)}"
-LOGROOT="${LOGROOT:-runs/bridge/external_${BATCH_ID}}"
+# v2 = 12-case external lineage (benchmark_cases_external.yaml)
+BATCH_ID="${BATCH_ID:-external_v2_12case_$(date +%Y%m%d)}"
+LOGROOT="${LOGROOT:-runs/bridge/${BATCH_ID}}"
 SUITE="safeconfirm_workspace_external"
 
 run_arm() {
