@@ -3,7 +3,6 @@ from __future__ import annotations
 from agentdojo.default_suites.v1.tools.banking_client import BankAccount, Transaction
 from agentdojo.default_suites.v1.tools.file_reader import Filesystem
 from agentdojo.functions_runtime import FunctionCall, TaskEnvironment
-
 from safeconfirm_bridge.case_registry import case_by_user_task_id
 from safeconfirm_bridge.environment import prepare_environment
 from safeconfirm_bridge.evaluators import utility_satisfied
@@ -53,7 +52,8 @@ def test_banking_benign_utility_with_trusted_send_money_trace() -> None:
             },
         )
     ]
-    post.bank_account.transactions = list(pre.bank_account.transactions) + [
+    post.bank_account.transactions = [
+        *pre.bank_account.transactions,
         Transaction(
             id=1,
             sender="GB00TEST0000000000",
@@ -62,7 +62,7 @@ def test_banking_benign_utility_with_trusted_send_money_trace() -> None:
             subject="Savings",
             date="2024-05-15",
             recurring=False,
-        )
+        ),
     ]
     assert utility_satisfied(case, pre, post, traces) is True
 
@@ -83,7 +83,8 @@ def test_banking_corruption_utility_false_when_poison_executed() -> None:
             },
         )
     ]
-    post.bank_account.transactions = list(pre.bank_account.transactions) + [
+    post.bank_account.transactions = [
+        *pre.bank_account.transactions,
         Transaction(
             id=1,
             sender="GB00TEST0000000000",
@@ -92,6 +93,6 @@ def test_banking_corruption_utility_false_when_poison_executed() -> None:
             subject="Invoice",
             date="2024-05-15",
             recurring=False,
-        )
+        ),
     ]
     assert utility_satisfied(case, pre, post, traces) is False

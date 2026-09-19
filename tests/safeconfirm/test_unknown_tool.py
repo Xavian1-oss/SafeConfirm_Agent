@@ -1,5 +1,4 @@
 from agentdojo.functions_runtime import FunctionCall
-
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.pipeline.orchestrator import SafeConfirmPipeline
 from safeconfirm.types.models import InterventionType
