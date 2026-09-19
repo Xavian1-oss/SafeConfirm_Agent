@@ -31,4 +31,4 @@ run_step "E1+E6 multi-seed" ./util_scripts/run_goal_c_multiseed.sh
 
 log "Goal C experiment batch complete"
 log "Primary E2E (28-case): ./util_scripts/run_extended_28case.sh"
-log "Optional cross-model: CROSS_MODEL=... ./util_scripts/run_cross_model_validation.sh"
+log "Optional cross-model: SECONDARY_MODEL=... ./util_scripts/run_cross_model_signature.sh"

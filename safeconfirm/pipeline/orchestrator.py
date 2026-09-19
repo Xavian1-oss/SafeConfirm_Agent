@@ -5,17 +5,17 @@ from typing import Any
 
 from agentdojo.functions_runtime import FunctionCall
 from agentdojo.types import ChatMessage
-from safeconfirm.analysis.provenance_stress import apply_provenance_label_flip
+from safeconfirm.analysis.provenance_stress import apply_provenance_label_flip, flip_rng_seed
 from safeconfirm.analysis.source_analyzer import analyze_sources
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
 from safeconfirm.extraction.slot_extractor import extract_critical_slots, get_tool_entry
 from safeconfirm.learning.experience_store import ExperienceStore
+from safeconfirm.pipeline.unknown_tool import build_unknown_tool_record
 from safeconfirm.policy.candidate_generator import generate_candidates
 from safeconfirm.policy.retrieval_policy import RetrievalPolicy
-from safeconfirm.pipeline.unknown_tool import build_unknown_tool_record
 from safeconfirm.policy.rule_policy import select_intervention
-from safeconfirm.types.models import InterventionRecordModel, InterventionType, SafeConfirmLogModel
+from safeconfirm.types.models import InterventionRecordModel, SafeConfirmLogModel
 
 
 class SafeConfirmPipeline:
@@ -53,9 +53,7 @@ class SafeConfirmPipeline:
             trusted_contact_emails=trusted_contact_emails,
         )
         if self.config.provenance_flip_rate > 0.0:
-            seed = self.config.provenance_flip_seed
-            if tool_call.id:
-                seed = seed ^ hash(tool_call.id) & 0xFFFFFFFF
+            seed = flip_rng_seed(self.config.provenance_flip_seed, tool_call.id)
             apply_provenance_label_flip(
                 analysis,
                 self.config.provenance_flip_rate,

@@ -30,9 +30,8 @@ Shared: `benchmark_subsets.sh`, `aggregate_seed_metrics.py`
 
 | Script | Purpose |
 |--------|---------|
-| `run_cross_model_signature.sh` | 12-case, 2 models (signature only) |
-| `run_cross_model_validation.sh` | **Deprecated wrapper** → calls signature |
-| `run_pilot_asr_check.sh` | Dev: verify P0 ASR before full paired rerun |
+| `run_cross_model_signature.sh` | Optional E4: 12-case, 2 models (scope-out for submission) |
+| `run_pilot_asr_check.sh` | Dev: verify P0 ASR before paired rerun |
 | `run_paired_security_rerun.sh` | 16-case paired (appendix / per-case) |
 | `run_goal_c_all.sh` | Legacy one-shot Goal C bundle |
 

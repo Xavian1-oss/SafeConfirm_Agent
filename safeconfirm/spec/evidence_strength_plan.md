@@ -3,7 +3,7 @@
 **版本:** 0.2.0  
 **日期:** 2026-09-16  
 **变更 (v0.2.0):** 导师反馈 — 执行顺序（baseline 先于 cross-model）、external **3 seeds**、banking 修复优先级、**authorization invariant** 表述、**Claim–Evidence Audit**、MV5 顺序、防计划膨胀  
-**依赖:** [task.md](./task.md), [benchmark_design.md](./benchmark_design.md), [goal_e_reposition_benchmark_plan.md](./goal_e_reposition_benchmark_plan.md)  
+**依赖:** [task.md](./task.md), [benchmark_design.md](./benchmark_design.md), [post_submission_experiment_plan.md](./post_submission_experiment_plan.md)  
 **触发:** 7 页稿模拟 AAMAS 审稿（~6–6.5/10 borderline）；**叙事已清晰，瓶颈在证据强度与贡献边界**  
 **论文:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`
 
@@ -96,7 +96,7 @@
 
 - [x] 8–12 cases 单元测试 + ground_truth 校验
 - [x] **≥3 seeds**（同一 agent model，默认 DeepSeek）paired P0 vs SC on external only（`evidence_20260916_1531`）
-- [x] 报告 mean±std（`aggregate_seed_metrics`）；SC ASR ≤ P0（9.5% vs 61.9%）
+- [x] 报告 mean±std（`aggregate_seed_metrics`）；12-case external SC ASR ≤ P0（0% vs 39.4%，batch `external_v2_12case_20260919`）
 - [x] 论文：Table~\ref{tab:external} + Limitations 区分 diagnostic vs external
 
 **API 预算原则:** external block 优先 **1 model × 3 seeds**，再考虑加第二 model 做 signature（§3.6）。
@@ -239,7 +239,7 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 
 **目的:** 每个 strong claim 对应唯一 evidence；删掉或收窄 **无证据** 的半步。
 
-**产物:** `safeconfirm/spec/claim_evidence_audit.md`（或论文 repo 内 checklist）
+**产物:** [submission_consistency_audit.md](./submission_consistency_audit.md) §2 claim 表
 
 **模板（填完并驱动 tex 修改）:**
 
@@ -264,7 +264,7 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 
 ```text
  1. E-P0-2   Banking 根因
- 2. E-P0-1   External 8–12 cases（3 seeds）
+ 2. E-P0-1   External **12** cases（3 seeds）☑
  3. E-P0-3   Provenance / generic-confirm baseline   ← novelty，先于 cross-model
  4. E-P1-1   SDR/CLR + N/A
  5. E-P1-3   Cross-model signature only
@@ -298,7 +298,7 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 | External runner | `util_scripts/run_external_eval.sh`（`SEEDS=s0 s1 s2`） |
 | Banking diagnostic | `util_scripts/run_banking_benign_check.sh` |
 | Banking 根因 | `safeconfirm/spec/banking_tsr_root_cause.md` |
-| Claim audit | `safeconfirm/spec/claim_evidence_audit.md` |
+| Claim audit | `safeconfirm/spec/submission_consistency_audit.md` |
 | Baseline policies | bridge / `baseline_block`, `baseline_vague` |
 | Metrics | `safeconfirm/evaluation/metrics.py` + tests |
 | 论文 | `6a9fb8173b16b4dea4fd1079/safeconfirm.tex` |
@@ -309,8 +309,8 @@ RQ4 — Repair contributes?                  → appendix repair on/off（短）
 
 | 文档 | 关系 |
 |------|------|
-| [goal_e_reposition_benchmark_plan.md](./goal_e_reposition_benchmark_plan.md) | 叙事 + 28-case；external lineage 未完成部分 |
-| [improvement_plan.md](./improvement_plan.md) | Goal D；本计划扩展 external + cross-model + audit |
+| [post_submission_experiment_plan.md](./post_submission_experiment_plan.md) | E1–E3 已完成 |
+| [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) | Goal D 收口（已完成） |
 | [benchmark_design.md](./benchmark_design.md) | 待更新：diagnostic vs external 双轨 + 3-seed 协议 |
 
 **task.md:** 阶段 **S8 — Evidence strength (Goal F)** → 本文档。

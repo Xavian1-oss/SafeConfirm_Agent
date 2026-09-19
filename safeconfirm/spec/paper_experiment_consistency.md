@@ -1,6 +1,6 @@
 # 论文 ↔ 实验一致性核对（SafeConfirm AAMAS 2027）
 
-**版本:** 0.2.0 · 2026-09-18  
+**版本:** 0.3.0 · 2026-09-19  
 **论文:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **刷新:** `./util_scripts/sync_paper_metrics.sh` 后对照 `paper_metrics/canonical/`
 
@@ -16,7 +16,16 @@ Problem: authorization gap + generic confirmation can launder bindings
     → Repair ablation (utility, not novelty)                       [RQ4, Appendix tab:supp]
 Limitations: DeepSeek-only, LLM confirmer proxy, conservative unknown-tool fallback, no banking utility claim
 Metrics: SDR/CLR operational rules in paper §Setup (gap remaining at approval; detector errors upstream)
+Appendix: tab:prov-flip = synthetic label-flip batch (do not compare TSR to Table 1 RQ2 row — different snapshot)
 ```
+
+**已知跨表差异（非 bug）**
+
+| 现象 | 原因 |
+|------|------|
+| RQ2 rule_v1 TSR 75% vs `tab:prov-flip` $p{=}0$ 61.1% | 不同跑批时间/随机性；附录注明同 harness |
+| `component_12case` 内 rule_v1 66.7% | 旧 component 批次；勿与主表 75% 混用 |
+| Overleaf tex vs 本仓库 | `6a9fb817…` 可能 gitignore；以 `sync_paper_metrics` + verify 为准 |
 
 **Claim 边界（必须与实验一致）**
 

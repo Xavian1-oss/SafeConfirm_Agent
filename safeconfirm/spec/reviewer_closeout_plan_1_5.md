@@ -45,7 +45,7 @@
 |----|------|------|
 | **S1-1** | 删除 learned-policy 整句；若需保留一句，改为 “hierarchy is the contribution, not a hand-written rule name” （已有类似表述则合并去重） | `safeconfirm.tex` §Method |
 | **S1-2** | 全文检索并清零：`learned policy`, `retrieval-learned`, `retrieval policy`, `Alternative learned`, `Appendix Table 4`（无 label 时搜 `tab:supp` + learned） | tex + `safeconfirm/spec/*.md` 若引用 |
-| **S1-3** | 核对 **claim → 表/图**：[claim_evidence_audit.md](./claim_evidence_audit.md) 与 [paper_experiment_consistency.md](./paper_experiment_consistency.md) 各一行对应 Table 1/2、Appendix | spec |
+| **S1-3** | 核对 **claim → 表/图**：[submission_consistency_audit.md](./submission_consistency_audit.md) §2 与 [paper_experiment_consistency.md](./paper_experiment_consistency.md) | spec |
 | **S1-4** | 核对数字：主表 `rule_v1` 75.0（12-case, 3-seed provenance batch）**不得**与附录 repair 快照混比；附录 caption 已有 “do not compare across tables” — 正文 Method 勿再指向附录证明 “learned tie” | tex |
 
 ### 论文同步点
@@ -171,7 +171,7 @@
 | **S4-2** | §Related Work（Provenance-aware 段）加 **对比句**：并发系统问 “should execute?”；本 baseline 隔离 “once gap detected, binary block only” | tex |
 | **S4-3** | §Results **RQ2** 首句强调 claim：**同 gap detection 下，binary enforcement vs authorization recovery → TSR 22.2 vs 75.0，ASR 均为 0**；**不** claim 数值优于 PACT | tex |
 | **S4-4** | Table 1 行标签可选：`Provenance-block (contract-style)` — 保持可辨，勿改名 PACT | tex |
-| **S4-5** | [claim_evidence_audit.md](./claim_evidence_audit.md) RQ2 行：evidence = Table 1 provenance block + hierarchy rows；wording = contract abstraction | spec |
+| **S4-5** | submission audit C3：evidence = Table 1 provenance block + hierarchy rows；wording = contract abstraction | spec |
 
 ### 完成标准（可停）
 
@@ -233,7 +233,7 @@
 
 | Step | 内容 | 参考 |
 |------|------|------|
-| 6 | External 8 → 12–16 cases，policy frozen | [benchmark_design.md](./benchmark_design.md), `benchmark_cases_external.yaml` |
+| 6 | External **12** cases，policy frozen | [benchmark_design.md](./benchmark_design.md), `benchmark_cases_external.yaml` ☑ |
 | 7 | Provenance detector interface + error boundary 段 | §Method 假设段；可选 label-flip sensitivity |
 | 8 | Cross-model signature only（RQ1 + E2E ASR） | `util_scripts/run_cross_model_signature.sh`, evidence_strength_plan E-P1-3 |
 

@@ -1,4 +1,4 @@
-from safeconfirm.analysis.provenance_stress import apply_provenance_label_flip
+from safeconfirm.analysis.provenance_stress import apply_provenance_label_flip, flip_rng_seed
 from safeconfirm.types.models import (
     CriticalSlotModel,
     SlotSourceRecordModel,
@@ -23,6 +23,14 @@ def _record(*, gap: bool, source: SourceTrust) -> SlotSourceRecordModel:
         authorization_gap=gap,
         risk_score=1.0 if gap else 0.1,
     )
+
+
+def test_flip_rng_seed_stable_across_calls() -> None:
+    a = flip_rng_seed(7, "call_abc")
+    b = flip_rng_seed(7, "call_abc")
+    c = flip_rng_seed(7, "call_xyz")
+    assert a == b
+    assert a != c
 
 
 def test_provenance_flip_zero_rate_is_noop() -> None:

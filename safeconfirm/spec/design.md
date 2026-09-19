@@ -694,7 +694,7 @@ cases:
 | `util_scripts/compare_component_ablation.py` | `component_ablation/` | Table 6 JSON | ☑ |
 | `util_scripts/run_component_ablation.sh` | workspace 12 | DS allow/block | ☑ |
 | `util_scripts/run_goal_c_multiseed.sh` | 3 seeds | E1 + E6 | ☑ |
-| `util_scripts/run_cross_model_validation.sh` | 50–60% subset | optional Gemini/GPT | optional |
+| `util_scripts/run_cross_model_signature.sh` | 12-case subset | optional second model | optional |
 | `util_scripts/run_goal_c_all.sh` | DeepSeek 全流程 | 一键复现 | ☑ |
 
 ---
@@ -732,7 +732,7 @@ tests/safeconfirm_bridge/
 
 ## 13. 实验与论文归档
 
-与 [task.md §6](./task.md#s6--goal-c-实验与论文交付已完成-)、[improvement_plan.md](./improvement_plan.md) 对齐。S1–S5 核心实现已完成；细节见代码与 `tests/`。
+与 [task.md](./task.md)、[paper_experiment_consistency.md](./paper_experiment_consistency.md) 对齐。细节见代码与 `tests/`。
 
 **论文源文件:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`
 
@@ -776,4 +776,4 @@ runs/native_gen/ds_v1_smoke/
 
 - [requirements.md](./requirements.md) — 需求、假设证据（§7.5–7.7）、验收（§8）
 - [task.md](./task.md) — 阶段总览、§S6 归档、§S7 Goal D
-- [improvement_plan.md](./improvement_plan.md) — Goal D 弱点响应与实验记录
+- [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) — 审稿收口

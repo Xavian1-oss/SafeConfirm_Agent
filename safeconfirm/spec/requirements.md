@@ -290,7 +290,7 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 
 ### 7.6 后续工作优先级（Goal C 视角）
 
-完整任务见 [task.md §S6](./task.md#s6--goal-c-实验与论文交付已完成-) 与 [improvement_plan.md](./improvement_plan.md)。
+完整任务见 [task.md](./task.md) 与 [evidence_strength_plan.md](./evidence_strength_plan.md)。
 
 | 优先级 | 工作项 | Goal 层级 | 状态 |
 |--------|--------|-----------|------|
@@ -340,7 +340,7 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 | **Goal C** | 7–8 页正文 + Related Work + Table 6 — ☑ |
 | **Goal D** | 20-case 主表 + REPAIR v2 + per-case 分析 — ☑ |
 
-**Optional（rebuttal）:** 跨模型 50–60% 子集 — `./util_scripts/run_cross_model_validation.sh`。
+**Optional（rebuttal）:** 跨模型 12-case — `./util_scripts/run_cross_model_signature.sh`。
 
 **仍 out of scope:** human study、instruction hijacking、新 suite — 写入 Limitations / Discussion。
 
@@ -391,4 +391,4 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 
 - [design.md](./design.md) — 技术设计
 - [task.md](./task.md) — 阶段总览、§S6/S7
-- [improvement_plan.md](./improvement_plan.md) — Goal D 实验记录
+- [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) — Goal D 收口记录

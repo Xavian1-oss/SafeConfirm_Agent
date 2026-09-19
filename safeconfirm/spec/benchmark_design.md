@@ -61,20 +61,9 @@ Email-style recipient poisoning remains the largest family; v0.4.2 adds BCC, cal
 
 | Item | Detail |
 |------|--------|
-| **Cases** | 8 in `benchmark_cases_external.yaml` (AgentDojo `user_tasks.py` lineage tags) |
-| **Suite** | `safeconfirm_workspace_external` (same tools/env as workspace) |
-| **Protocol** | Policy-freeze-v2; **1 model × 3 seeds** paired P0 vs SC; report separately from 28-case diagnostic |
+| **Cases** | 12 in `benchmark_cases_external.yaml` (11 corruption + 1 benign; AgentDojo lineage) |
+| **Suite** | `safeconfirm_workspace_external` |
+| **Protocol** | DeepSeek × **3 seeds** paired P0 vs SC; batch e.g. `external_v2_12case_*` |
 | **Runner** | `./util_scripts/run_external_eval.sh` |
 
-Diagnostic (28-case) answers mechanism validity; external answers **native-lineage external validity** without tuning `rule_v1` on these cases.
-
-## Extension targets (E2, optional)
-
-Target **28–32 cases** by filling matrix gaps:
-
-- Non-recipient email slots (attachments)
-- URL / link authority-bearing bindings
-- Banking amount slot
-- Native AgentDojo task adaptations (≥30% of new cases)
-
-See [goal_e_reposition_benchmark_plan.md](./goal_e_reposition_benchmark_plan.md) §5.2.
+Diagnostic (28-case) = mechanism validity; external = **lineage external validity** without retuning `rule_v1`.

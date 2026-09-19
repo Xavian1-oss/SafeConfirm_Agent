@@ -17,7 +17,7 @@
 | Stale claims (learned/retrieval/fail-open ALLOW) | **PASS** | Removed in closeout; Limitations updated |
 | Claim–evidence mapping | **PASS** | Every main claim has table/figure/appendix |
 | Wording (human vs channel) | **MINOR FIX** | Abstract/Intro softened (§4) |
-| Internal spec drift | **FIXED** | `paper_experiment_consistency.md` §6, `claim_evidence_audit.md` |
+| Internal spec drift | **FIXED** | `paper_experiment_consistency.md` §6 |
 
 **Submit gate:** Re-run `verify_paper_metrics.py` after any number change; re-read §3 claim table before camera-ready.
 
@@ -79,7 +79,7 @@
 | A1 | Footnote `h` in tablenotes but no `\tnote{h}` in table body; Limitations cites “footnote h” | Medium | Add marker on Banking (6)/P0 row |
 | A2 | Abstract/Intro “user may approve” vs no human study | Low | Rephrase to confirmation-channel |
 | A3 | `paper_experiment_consistency.md` §6 still said registry ALLOW | Doc | Updated to conservative_confirm |
-| A4 | `claim_evidence_audit.md` stale (fail-open, repair ☐) | Doc | Refreshed v0.3 |
+| A4 | Duplicate claim checklist doc | Doc | Removed; use §2 below |
 | A5 | Appendix `v0.5.0` version label | Low | Removed (align with main table style) |
 
 **Not issues:** Related work “90% stall” = `stall_rate` 0.9 in defense sweep, not TSR 90%. Provenance 75% vs old component 66.7% — different batches; not cited together in tex.
@@ -110,6 +110,5 @@
 
 ## 7. Related docs
 
-- [claim_evidence_audit.md](./claim_evidence_audit.md) — short claim index  
-- [paper_experiment_consistency.md](./paper_experiment_consistency.md) — row-level JSON map  
+- [paper_experiment_consistency.md](./paper_experiment_consistency.md) — row-level JSON map + 闭环  
 - [reviewer_closeout_plan_1_5.md](./reviewer_closeout_plan_1_5.md) — Steps 1–5 done

@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import hashlib
 import random
 
 from safeconfirm.analysis.source_analyzer import binding_slot_records
 from safeconfirm.types.models import SourceAnalysisResultModel, SourceTrust
+
+
+def flip_rng_seed(base_seed: int, tool_call_id: str | None) -> int:
+    """Stable per-call seed (do not use built-in hash(); it is process-randomized)."""
+    if not tool_call_id:
+        return base_seed & 0xFFFFFFFF
+    digest = hashlib.sha256(f"{base_seed}:{tool_call_id}".encode()).digest()
+    return int.from_bytes(digest[:4], "big")
 
 
 def apply_provenance_label_flip(
