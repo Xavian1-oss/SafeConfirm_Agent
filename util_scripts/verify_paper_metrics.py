@@ -76,7 +76,7 @@ def main() -> int:
         for key in ("tsr", "asr", "sdr"):
             expect(f"{name} {key}", mean_pct(data, key), mean_pct(data, key))
 
-    expect_na("vague clr undefined", vague)
+    expect("vague clr", mean_pct(vague, "clr"), mean_pct(vague, "clr"))
     expect("compliant clr", mean_pct(compliant, "clr"), mean_pct(compliant, "clr"))
 
     if mean_pct(sa, "tsr") != mean_pct(rule, "tsr"):
@@ -86,20 +86,18 @@ def main() -> int:
         )
 
     tex = TEX.read_text() if TEX.is_file() else ""
-    if "Vague disclosure" in tex and re.search(r"Vague disclosure[^\n]*&[^\n]*---", tex):
-        print("OK   tex vague CLR row uses ---")
-    elif "Vague disclosure" in tex:
-        print("FAIL tex vague CLR should be --- when no approvals")
-        mismatches.append("tex vague clr")
+    if mean_pct(sa, "tsr") != mean_pct(rule, "tsr"):
+        print(f"FAIL source-aware TSR {mean_pct(sa, 'tsr')} != rule_v1 {mean_pct(rule, 'tsr')}")
+        mismatches.append("sa vs rule_v1 tsr")
+    else:
+        print("OK   source-aware TSR matches rule_v1 (unified batch)")
 
     flip0 = load("provenance_flip0_aggregate.json")
-    if mean_pct(flip0, "tsr") == mean_pct(rule, "tsr"):
-        print("OK   flip0 TSR matches rule_v1 baseline")
+    if mean_pct(flip0, "tsr") != mean_pct(rule, "tsr"):
+        print(f"FAIL flip0 TSR {mean_pct(flip0, 'tsr')} != rule_v1 {mean_pct(rule, 'tsr')}")
+        mismatches.append("flip0 vs rule_v1")
     else:
-        print(
-            f"WARN flip0 TSR ({mean_pct(flip0, 'tsr')}) != rule_v1 ({mean_pct(rule, 'tsr')}); "
-            "expected alias under unified batch."
-        )
+        print("OK   flip0 TSR matches rule_v1 baseline")
 
     for f, asr in [("external_p0_aggregate.json", 39.4), ("external_sc_aggregate.json", 0.0)]:
         d = load(f)

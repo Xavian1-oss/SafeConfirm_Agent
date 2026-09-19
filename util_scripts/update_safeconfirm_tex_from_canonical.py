@@ -62,8 +62,11 @@ def patch_repair_row(tex: str, label: str, tsr: float, asr: float) -> str:
 
 
 def patch_prov_flip(tex: str, rate_label: str, tsr: str, asr: str) -> str:
-    pattern = rf"({re.escape(rate_label)}[^\n]*&\s*)[\d. $\pm\d.]+(\s*&\s*)[\d. $\pm\d.]+(\s*\\\\)"
-    repl = rf"\g<1>{tsr}\g<2>{asr}\g<3>"
+    pattern = rf"({re.escape(rate_label)}[^\n]*&\s*)[^\n]+(\s*&\s*)[^\n]+(\s*\\\\)"
+
+    def repl(match: re.Match[str]) -> str:
+        return f"{match.group(1)}{tsr}{match.group(2)}{asr}{match.group(3)}"
+
     new_tex, n = re.subn(pattern, repl, tex, count=1)
     if n != 1:
         raise SystemExit(f"Failed to patch prov-flip row: {rate_label!r}")
@@ -126,7 +129,7 @@ def main() -> None:
     tex = patch_row(
         tex,
         "Provenance-vague (\\texttt{baseline\\_vague})",
-        [fmt_metric(pvague, "tsr"), fmt_metric(pvague, "asr"), fmt_metric(pvague, "sdr"), "---"],
+        [fmt_metric(pvague, "tsr"), fmt_metric(pvague, "asr"), fmt_metric(pvague, "sdr"), fmt_metric(pvague, "clr")],
     )
 
     def repair_tsr_asr(data: dict) -> tuple[float, float]:
