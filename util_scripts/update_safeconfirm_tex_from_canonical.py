@@ -129,7 +129,7 @@ def main() -> None:
     tex = patch_row(
         tex,
         "Provenance-vague (\\texttt{baseline\\_vague})",
-        [fmt_metric(pvague, "tsr"), fmt_metric(pvague, "asr"), fmt_metric(pvague, "sdr"), fmt_metric(pvague, "clr")],
+        [fmt_metric(pvague, "tsr"), fmt_metric(pvague, "asr"), fmt_metric(pvague, "sdr"), "---"],
     )
 
     def repair_tsr_asr(data: dict) -> tuple[float, float]:

@@ -21,6 +21,8 @@ copy_if() {
 
 echo "Syncing paper metrics -> ${DEST}"
 
+# Optional: UNIFIED_12CASE_BATCH=unified_12case_YYYYMMDD overrides Table 1 RQ1–RQ2 canonical rows.
+# Default (unset) uses legacy multi-batch snapshots documented in paper_experiment_consistency.md.
 UNIFIED="${UNIFIED_12CASE_BATCH:-}"
 if [[ -n "${UNIFIED}" && -f "runs/bridge/${UNIFIED}/rule_v1_aggregate.json" ]]; then
   UB="runs/bridge/${UNIFIED}"

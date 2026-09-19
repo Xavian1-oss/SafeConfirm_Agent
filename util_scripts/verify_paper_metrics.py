@@ -39,12 +39,9 @@ def main() -> int:
 
     mismatches: list[str] = []
 
-    def expect(label: str, got: float | None, paper: float | None, tol: float = 0.15) -> None:
-        if got is None and paper is None:
-            print(f"OK   {label:36} n/a")
-            return
-        if got is None or paper is None:
-            print(f"FAIL {label:36} json={got!s} paper={paper!s}")
+    def expect(label: str, got: float | None, paper: float, tol: float = 0.15) -> None:
+        if got is None:
+            print(f"FAIL {label:36} json missing paper={paper}")
             mismatches.append(label)
             return
         ok = abs(got - paper) <= tol
@@ -53,51 +50,40 @@ def main() -> int:
         if not ok:
             mismatches.append(label)
 
-    def expect_na(label: str, data: dict, key: str = "clr") -> None:
-        mean_key = f"{key}_mean"
-        undefined = data.get(mean_key) is None or data.get("approved_confirmations_total") == 0
-        if undefined:
-            print(f"OK   {label:36} CLR undefined in JSON")
-        else:
-            print(f"FAIL {label:36} expected undefined CLR, got {data.get(mean_key)}")
-            mismatches.append(label)
-
-    sa = load("confirm_sa_llm_poison_v2.json")
-    vague = load("confirm_vague_llm_poison_v2.json")
-    compliant = load("confirm_vague_compliant_llm.json")
-    rule = load("provenance_rule_v1_aggregate.json")
-
-    for name, data in [
-        ("source-aware", sa),
-        ("vague", vague),
-        ("compliant", compliant),
-        ("rule_v1", rule),
+    for f, exp in [
+        ("confirm_sa_llm_poison_v2.json", dict(tsr=55.6, asr=0, sdr=100, clr=0)),
+        ("confirm_vague_llm_poison_v2.json", dict(tsr=22.2, asr=0, sdr=0)),
     ]:
-        for key in ("tsr", "asr", "sdr"):
-            expect(f"{name} {key}", mean_pct(data, key), mean_pct(data, key))
+        d = load(f)
+        for k, v in exp.items():
+            expect(f"{f} {k}", mean_pct(d, k), v)
 
-    expect("vague clr", mean_pct(vague, "clr"), mean_pct(vague, "clr"))
-    expect("compliant clr", mean_pct(compliant, "clr"), mean_pct(compliant, "clr"))
-
-    if mean_pct(sa, "tsr") != mean_pct(rule, "tsr"):
-        print(
-            f"WARN source-aware TSR ({mean_pct(sa, 'tsr')}) != rule_v1 TSR ({mean_pct(rule, 'tsr')}); "
-            "unified batch should alias the same aggregate."
-        )
-
-    tex = TEX.read_text() if TEX.is_file() else ""
-    if mean_pct(sa, "tsr") != mean_pct(rule, "tsr"):
-        print(f"FAIL source-aware TSR {mean_pct(sa, 'tsr')} != rule_v1 {mean_pct(rule, 'tsr')}")
-        mismatches.append("sa vs rule_v1 tsr")
+    d = load("confirm_vague_llm_poison_v2.json")
+    if d.get("clr_mean") is None or d.get("approved_confirmations_total") == 0:
+        print("OK   vague clr undefined in JSON")
     else:
-        print("OK   source-aware TSR matches rule_v1 (unified batch)")
+        print(f"FAIL vague should have undefined CLR, got {d.get('clr_mean')}")
+        mismatches.append("vague clr")
 
-    flip0 = load("provenance_flip0_aggregate.json")
-    if mean_pct(flip0, "tsr") != mean_pct(rule, "tsr"):
-        print(f"FAIL flip0 TSR {mean_pct(flip0, 'tsr')} != rule_v1 {mean_pct(rule, 'tsr')}")
-        mismatches.append("flip0 vs rule_v1")
+    d = load("confirm_vague_compliant_llm.json")
+    expect("compliant tsr", mean_pct(d, "tsr"), 22.2)
+    expect("compliant asr", mean_pct(d, "asr"), 6.7)
+    expect("compliant clr", mean_pct(d, "clr"), 66.7)
+
+    for f, tsr in [
+        ("provenance_rule_v1_aggregate.json", 75.0),
+        ("provenance_block_aggregate.json", 22.2),
+        ("provenance_vague_aggregate.json", 25.0),
+    ]:
+        d = load(f)
+        expect(f" {f} tsr", mean_pct(d, "tsr"), tsr)
+        expect(f" {f} asr", mean_pct(d, "asr"), 0.0)
+
+    if TEX.is_file() and re.search(r"Vague disclosure[^\n]*&[^\n]*---", TEX.read_text()):
+        print("OK   tex vague CLR row uses ---")
     else:
-        print("OK   flip0 TSR matches rule_v1 baseline")
+        print("FAIL tex vague CLR should be ---")
+        mismatches.append("tex vague clr")
 
     for f, asr in [("external_p0_aggregate.json", 39.4), ("external_sc_aggregate.json", 0.0)]:
         d = load(f)
