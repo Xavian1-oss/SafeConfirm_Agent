@@ -23,7 +23,7 @@ Appendix: tab:prov-flip = synthetic label-flip batch (do not compare TSR to Tabl
 
 | 现象 | 原因 |
 |------|------|
-| RQ2 rule_v1 TSR vs `tab:prov-flip` $p{=}0$ | **统一批次** `run_unified_12case_batch.sh`：`flip0` 别名 `rule_v1_aggregate`；重跑后应一致 |
+| RQ2 rule_v1 TSR 75% vs `tab:prov-flip` $p{=}0$ 61.1% | 不同跑批时间/随机性；附录注明同 harness、勿跨表比绝对 TSR |
 | Vague disclosure CLR | 无 approval → JSON `clr_mean: null` → 表内 `---`（非 0.0） |
 | `component_12case` 内 rule_v1 66.7% | 旧 component 批次；勿与主表 75% 混用 |
 | Overleaf tex vs 本仓库 | `6a9fb817…` 可能 gitignore；以 `sync_paper_metrics` + verify 为准 |
