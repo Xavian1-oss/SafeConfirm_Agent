@@ -58,12 +58,10 @@ def _print_metrics(metrics) -> None:
 def _resolve_policy_backend(defense: str | None, policy: str | None) -> str | None:
     if policy is not None:
         return policy
-    if defense == "safeconfirm_retrieval":
-        return "retrieval"
     if defense == "safeconfirm":
         return "rule_v1"
     if defense == "safeconfirm_log_only":
-        return "log_only"
+        return None
     return None
 
 
@@ -127,7 +125,7 @@ def _run_matched_pairs(
     return runs
 
 
-POLICY_CHOICES = ["rule_v1", "baseline_vague", "baseline_allow", "baseline_block", "retrieval"]
+POLICY_CHOICES = ["rule_v1", "baseline_vague", "baseline_allow", "baseline_block"]
 
 
 @click.command()

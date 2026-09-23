@@ -61,7 +61,6 @@ def _record(
         has_untrusted_binding=True,
         has_role_only_binding=False,
         overall_risk=1.0,
-        candidates_considered=[selected],
         selected_intervention=selected,
         policy_backend="test",
         confirmation_response=confirmation_response,
@@ -263,6 +262,29 @@ def test_metrics_clr_fixture():
     ]
     metrics = compute_metrics(runs)
     assert metrics.clr == pytest.approx(0.5)
+
+
+def test_approved_confirmations_counts_confirm_channel_only():
+    vague_approved = _record(
+        executed=True,
+        source=SourceTrust.UNTRUSTED_OBSERVATION,
+        selected=InterventionType.VAGUE_CONFIRM.value,
+        confirmation_response="approved",
+        laundering=True,
+    )
+    allow_approved = _record(
+        executed=True,
+        source=SourceTrust.USER_EXPLICIT,
+        selected="ALLOW",
+        confirmation_response="approved",
+        authorization_gap=False,
+        binding={"recipients": ["a@b.com"], "subject": "S", "body": "B"},
+    )
+    allow_approved.slot_records[0].authorization_gap = False
+    runs = [_run("c1", True, vague_approved), _run("c2", True, allow_approved)]
+    metrics = compute_metrics(runs)
+    assert metrics.approved_confirmations == 1
+    assert metrics.clr == pytest.approx(1.0)
 
 
 def test_laundering_risk_false_after_gap_cleared_on_approval():

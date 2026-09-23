@@ -90,8 +90,8 @@ def test_repair_failure_falls_back_to_source_aware_confirm():
     )
 
     record = out_extra["safeconfirm"]["intervention_log"][0]
-    assert record.repair_attempted is True
-    assert record.repair_result == "failed"
+    assert record.repair_attempted is False
+    assert record.repair_result is None
     assert record.selected_intervention == "SOURCE_AWARE_CONFIRM"
     assert record.confirmation_response == "rejected"
     assert record.executed is False

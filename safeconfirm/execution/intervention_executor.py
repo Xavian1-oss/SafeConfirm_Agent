@@ -13,14 +13,14 @@ from agentdojo.types import (
 )
 from safeconfirm.analysis.source_analyzer import binding_slot_records
 from safeconfirm.config.loader import SafeConfirmConfig
+from safeconfirm.context.task_context import TaskContext, task_context_from_parts
+from safeconfirm.evaluation.metrics import laundering_risk_at_approval
 from safeconfirm.execution.confirmation import (
     build_confirmation_payload,
-    is_confirmation_laundering,
     load_templates,
     validate_disclosure,
 )
 from safeconfirm.execution.confirmer import get_confirmer
-from safeconfirm.execution.repair_engine import RepairEngine
 from safeconfirm.pipeline.orchestrator import SafeConfirmPipeline
 from safeconfirm.types.models import InterventionRecordModel, InterventionType
 
@@ -67,11 +67,10 @@ class InterventionExecutor:
         self.config = config
         self.templates = load_templates(config.templates_path)
         self.confirmer = get_confirmer()
-        self.repair_engine = RepairEngine(config)
 
     def apply(
         self,
-        query: str,
+        task_context: TaskContext,
         runtime: FunctionsRuntime,
         env: TaskEnvironment,
         messages: list[ChatMessage],
@@ -80,6 +79,7 @@ class InterventionExecutor:
         extra_args: dict,
         pipeline: SafeConfirmPipeline,
     ) -> InterventionOutcome:
+        query = task_context.user_instruction
         if any(record.selected_intervention == InterventionType.BLOCK.value for record in records):
             return self._block_all(
                 messages, records, "SafeConfirm blocked one or more tool calls due to authorization risk."
@@ -89,7 +89,9 @@ class InterventionExecutor:
             return self._replan_all(messages, records)
 
         if any(record.selected_intervention == InterventionType.REPAIR.value for record in records):
-            return self._repair_batch(query, runtime, env, messages, tool_calls, records, extra_args, pipeline)
+            return self._repair_batch(
+                task_context, runtime, env, messages, tool_calls, records, extra_args, pipeline
+            )
 
         if any(record.selected_intervention in CONFIRM_INTERVENTIONS for record in records):
             return self._confirm_batch(messages, tool_calls, records, extra_args)
@@ -98,7 +100,7 @@ class InterventionExecutor:
 
     def _repair_batch(
         self,
-        query: str,
+        task_context: TaskContext,
         runtime: FunctionsRuntime,
         env: TaskEnvironment,
         messages: list[ChatMessage],
@@ -107,6 +109,7 @@ class InterventionExecutor:
         extra_args: dict,
         pipeline: SafeConfirmPipeline,
     ) -> InterventionOutcome:
+        query = task_context.user_instruction
         updated_calls: list[FunctionCall] = []
         needs_confirm = False
 
@@ -116,7 +119,14 @@ class InterventionExecutor:
                 continue
 
             record.repair_attempted = True
-            repair_outcome = self.repair_engine.attempt_repair(tool_call, record, runtime, env, extra_args)
+            repair_outcome = pipeline.repair_engine.attempt_repair(
+                tool_call,
+                record,
+                runtime,
+                env,
+                user_instruction=task_context.user_instruction,
+                trusted_resolver=task_context.trusted_resolver,
+            )
             if not repair_outcome.success:
                 record.repair_result = "failed"
                 record.selected_intervention = self._repair_fallback().value
@@ -134,9 +144,11 @@ class InterventionExecutor:
 
             reanalysis = pipeline.analyze_tool_call(
                 repaired_call,
-                query,
-                messages,
-                trusted_contact_emails=repair_outcome.trusted_emails,
+                task_context_from_parts(
+                    query,
+                    messages,
+                    resolver_attested_emails=repair_outcome.trusted_emails,
+                ),
             )
             _copy_reanalysis(record, reanalysis)
 
@@ -183,13 +195,14 @@ class InterventionExecutor:
         messages.append(ChatUserMessage(role="user", content=[text_content_block_from_string(payload.prompt_text)]))
 
         response = self.confirmer.respond(payload, primary, extra_args)
-        laundering = is_confirmation_laundering(payload, response, primary)
 
         for record in records:
             if record.selected_intervention in CONFIRM_INTERVENTIONS:
                 record.confirmation_prompt = payload.prompt_text
                 record.confirmation_response = response.outcome
-                record.confirmation_laundering_risk = laundering
+                record.confirmation_laundering_risk = (
+                    laundering_risk_at_approval(record) if response.outcome == "approved" else False
+                )
 
         # Drop the synthetic confirm user turn before returning to the agent loop.
         # Leaving assistant(tool_calls) + user(confirm) breaks OpenAI-compatible APIs and
@@ -262,8 +275,6 @@ def _copy_reanalysis(record: InterventionRecordModel, reanalysis: InterventionRe
     record.has_untrusted_binding = reanalysis.has_untrusted_binding
     record.has_role_only_binding = reanalysis.has_role_only_binding
     record.overall_risk = reanalysis.overall_risk
-    record.candidates_considered = reanalysis.candidates_considered
-
 
 def _apply_corrected_slots(
     tool_calls: list[FunctionCall],

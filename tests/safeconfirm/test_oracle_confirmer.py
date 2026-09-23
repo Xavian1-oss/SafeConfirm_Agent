@@ -41,7 +41,6 @@ def _record(
         has_untrusted_binding=True,
         has_role_only_binding=False,
         overall_risk=1.0,
-        candidates_considered=[intervention],
         selected_intervention=intervention,
         policy_backend="test",
     )

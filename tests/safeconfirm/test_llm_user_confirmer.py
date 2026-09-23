@@ -54,7 +54,6 @@ def test_llm_user_confirmer_uses_only_user_query():
         has_untrusted_binding=True,
         has_role_only_binding=False,
         overall_risk=1.0,
-        candidates_considered=["SOURCE_AWARE_CONFIRM"],
         selected_intervention="SOURCE_AWARE_CONFIRM",
         policy_backend="rule_v1",
     )

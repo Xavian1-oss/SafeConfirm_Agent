@@ -41,9 +41,6 @@ copy_if runs/bridge/ablation_repair_poison_v2_20260910/on/safeconfirm_workspace/
 copy_if runs/bridge/ablation_repair_poison_v2_20260910/off/safeconfirm_workspace/metrics.json "${CANON}/repair_full_off_poison_v2.json"
 copy_if runs/bridge/ablation_repair_subset_poison_v2_20260910/on/safeconfirm_workspace/metrics.json "${CANON}/repair_subset_on_poison_v2.json"
 copy_if runs/bridge/ablation_repair_subset_poison_v2_20260910/off/safeconfirm_workspace/metrics.json "${CANON}/repair_subset_off_poison_v2.json"
-copy_if runs/bridge/e2e_retrieval_poison_v2_20260910/rule_v1/safeconfirm_workspace/metrics.json "${CANON}/retrieval_rule_v1_poison_v2.json"
-copy_if runs/bridge/e2e_retrieval_poison_v2_20260910/retrieval/safeconfirm_workspace/metrics.json "${CANON}/retrieval_policy_poison_v2.json"
-
 # --- 16-case paired batch (per-case table / tab:percase) ---
 copy_if runs/bridge/paired_security_poison_v2_16case/p0_aggregate.json "${CANON}/paired_p0_16case_poison_v2.json"
 copy_if runs/bridge/paired_security_poison_v2_16case/sc_aggregate.json "${CANON}/paired_sc_16case_poison_v2.json"

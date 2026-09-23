@@ -1,17 +1,11 @@
 mode: active
 policy_backend: rule_v1
 risk_threshold_confirm: 0.5
-risk_threshold_block: 0.9
-never_allow_on_untrusted: true
 enable_repair: true
-max_repair_attempts: 2
 registry_path: safeconfirm/data/tool_slot_registry.yaml
 templates_path: safeconfirm/data/confirmation_templates.yaml
 simulated_confirmer: llm_user
-experiences_path: safeconfirm/data/experiences.jsonl
-training_cases_path: safeconfirm/data/seed_training_cases.yaml
-retrieval_top_k: 5
-# allow | conservative_confirm | block — tools missing from slot registry
+# conservative_confirm | block — tools missing from slot registry
 unknown_tool_policy: conservative_confirm
 # Synthetic provenance-label flip rate for sensitivity runs (0 = off)
 provenance_flip_rate: 0.0

@@ -19,8 +19,9 @@
 
 | 文档 | 用途 |
 |------|------|
+| [architecture.md](./architecture.md) | **代码分层**（adapter → analyzer → policy core） |
 | [requirements.md](./requirements.md) | 指标定义、实验矩阵 |
-| [design.md](./design.md) | 架构、Bridge、表–脚本映射（较长） |
+| [design.md](./design.md) | 运行时五步流水线（精简） |
 | [task.md](./task.md) | 一键复现命令与主结果摘要 |
 
 已删除冗余计划：`improvement_plan.md`、`goal_e_reposition_benchmark_plan.md`、`claim_evidence_audit.md`（内容并入上表两份审计/一致性文档；完整历史见 git）。

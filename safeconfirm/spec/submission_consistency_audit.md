@@ -3,7 +3,7 @@
 **Date:** 2026-09-18  
 **Paper:** `6a9fb8173b16b4dea4fd1079/safeconfirm.tex`  
 **Numbers:** `6a9fb8173b16b4dea4fd1079/paper_metrics/canonical/`  
-**Automated check:** `uv run python util_scripts/verify_paper_metrics.py` → **41/41 OK** after 12-case external sync (2026-09-19)
+**Automated check:** `uv run python util_scripts/verify_paper_metrics.py` (full Table 1/2 + appendix rows vs canonical JSON)
 
 ---
 

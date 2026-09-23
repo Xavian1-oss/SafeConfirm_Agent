@@ -112,13 +112,7 @@ def test_delegated_content_from_observation_does_not_create_binding_gap(registry
         ),
     ]
     extraction = extract_critical_slots("send_email", messages[-1]["tool_calls"][0].args, registry)
-    analysis = analyze_sources(
-        query,
-        messages,
-        extraction,
-        registry,
-        trusted_contact_emails={"supervisor@university.edu"},
-    )
+    analysis = analyze_sources(query, messages, extraction, registry)
 
     body_record = next(record for record in analysis.slot_records if record.slot.name == "body")
     recipient_record = next(record for record in analysis.slot_records if record.slot.name == "recipients")
@@ -126,5 +120,18 @@ def test_delegated_content_from_observation_does_not_create_binding_gap(registry
     assert body_record.slot.slot_class == "content"
     assert body_record.source == SourceTrust.UNTRUSTED_OBSERVATION
     assert body_record.authorization_gap is False
-    assert recipient_record.authorization_gap is False
+    assert recipient_record.source == SourceTrust.USER_ROLE
+    assert recipient_record.authorization_gap is True
     assert analysis.has_untrusted_binding is False
+    assert analysis.has_role_only_binding is True
+
+    attested = analyze_sources(
+        query,
+        messages,
+        extraction,
+        registry,
+        resolver_attested_emails={"supervisor@university.edu"},
+    )
+    attested_recipient = next(r for r in attested.slot_records if r.slot.name == "recipients")
+    assert attested_recipient.source == SourceTrust.TRUSTED_CONTACT
+    assert attested_recipient.authorization_gap is False

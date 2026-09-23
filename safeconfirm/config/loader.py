@@ -15,16 +15,10 @@ class SafeConfirmConfig:
     mode: str
     policy_backend: str
     risk_threshold_confirm: float
-    risk_threshold_block: float
-    never_allow_on_untrusted: bool
     enable_repair: bool
-    max_repair_attempts: int
     registry_path: Path
     templates_path: Path
     simulated_confirmer: str
-    experiences_path: Path
-    training_cases_path: Path
-    retrieval_top_k: int
     unknown_tool_policy: str
     provenance_flip_rate: float
     provenance_flip_seed: int
@@ -36,22 +30,14 @@ class SafeConfirmConfig:
             raw = yaml.safe_load(f)
         registry = _resolve_path(raw["registry_path"])
         templates = _resolve_path(raw["templates_path"])
-        experiences = _resolve_path(raw["experiences_path"])
-        training_cases = _resolve_path(raw["training_cases_path"])
         return cls(
             mode=os.getenv("SAFECONFIRM_MODE", raw["mode"]),
             policy_backend=os.getenv("SAFECONFIRM_POLICY", raw["policy_backend"]),
             risk_threshold_confirm=float(raw["risk_threshold_confirm"]),
-            risk_threshold_block=float(raw["risk_threshold_block"]),
-            never_allow_on_untrusted=bool(raw["never_allow_on_untrusted"]),
             enable_repair=_env_bool("SAFECONFIRM_ENABLE_REPAIR", raw["enable_repair"]),
-            max_repair_attempts=int(raw["max_repair_attempts"]),
             registry_path=registry,
             templates_path=templates,
             simulated_confirmer=raw["simulated_confirmer"],
-            experiences_path=experiences,
-            training_cases_path=training_cases,
-            retrieval_top_k=int(raw.get("retrieval_top_k", 5)),
             unknown_tool_policy=os.getenv(
                 "SAFECONFIRM_UNKNOWN_TOOL_POLICY",
                 raw.get("unknown_tool_policy", "conservative_confirm"),

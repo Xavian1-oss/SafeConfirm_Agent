@@ -8,6 +8,7 @@ from agentdojo.functions_runtime import FunctionCall, FunctionCallArgTypes, Func
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry, load_registry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
+from safeconfirm.resolver.trusted_resolver import NULL_TRUSTED_RESOLVER, TrustedResolver
 from safeconfirm.types.models import InterventionRecordModel
 
 
@@ -24,13 +25,45 @@ class RepairEngine:
         self.config = config
         self.registry = registry or load_registry(config.registry_path)
 
+    def can_resolve(
+        self,
+        tool_call: FunctionCall,
+        record: InterventionRecordModel,
+        runtime: FunctionsRuntime,
+        env: TaskEnvironment,
+        *,
+        user_instruction: str,
+        trusted_resolver: TrustedResolver = NULL_TRUSTED_RESOLVER,
+    ) -> bool:
+        entry = get_tool_entry(self.registry, tool_call.function)
+        if entry is None or entry.repair is None:
+            return False
+
+        strategy = entry.repair.get("strategy")
+        if strategy == "contact_lookup":
+            return self._can_contact_lookup(
+                tool_call,
+                record,
+                runtime,
+                env,
+                entry.repair,
+                trusted_resolver,
+            )
+        if strategy == "trusted_account_lookup":
+            return self._can_trusted_account_lookup(
+                tool_call, record, env, entry.repair, user_instruction
+            )
+        return False
+
     def attempt_repair(
         self,
         tool_call: FunctionCall,
         record: InterventionRecordModel,
         runtime: FunctionsRuntime,
         env: TaskEnvironment,
-        extra_args: dict | None = None,
+        *,
+        user_instruction: str,
+        trusted_resolver: TrustedResolver = NULL_TRUSTED_RESOLVER,
     ) -> RepairOutcome:
         entry = get_tool_entry(self.registry, tool_call.function)
         if entry is None or entry.repair is None:
@@ -38,10 +71,45 @@ class RepairEngine:
 
         strategy = entry.repair.get("strategy")
         if strategy == "contact_lookup":
-            return self._contact_lookup(tool_call, record, runtime, env, entry.repair, extra_args)
+            return self._contact_lookup(
+                tool_call, record, runtime, env, entry.repair, trusted_resolver
+            )
         if strategy == "trusted_account_lookup":
-            return self._trusted_account_lookup(tool_call, record, env, entry.repair, extra_args)
+            return self._trusted_account_lookup(
+                tool_call, record, env, entry.repair, user_instruction
+            )
         return RepairOutcome(success=False, reason=f"unsupported_strategy:{strategy}")
+
+    def _can_contact_lookup(
+        self,
+        tool_call: FunctionCall,
+        record: InterventionRecordModel,
+        runtime: FunctionsRuntime,
+        env: TaskEnvironment,
+        repair_cfg: dict,
+        trusted_resolver: TrustedResolver,
+    ) -> bool:
+        role_slot = repair_cfg.get("role_slot")
+        lookup_tool = repair_cfg.get("lookup_tool", "search_contacts_by_name")
+        if not role_slot:
+            return False
+
+        role_label = _role_label_for_slot(record, role_slot)
+        if role_label is None:
+            return False
+
+        return (
+            _lookup_contact_email(
+                runtime,
+                env,
+                lookup_tool,
+                role_label,
+                tool_call,
+                role_slot,
+                trusted_resolver,
+            )
+            is not None
+        )
 
     def _contact_lookup(
         self,
@@ -50,7 +118,7 @@ class RepairEngine:
         runtime: FunctionsRuntime,
         env: TaskEnvironment,
         repair_cfg: dict,
-        extra_args: dict | None = None,
+        trusted_resolver: TrustedResolver,
     ) -> RepairOutcome:
         role_slot = repair_cfg.get("role_slot")
         lookup_tool = repair_cfg.get("lookup_tool", "search_contacts_by_name")
@@ -61,9 +129,6 @@ class RepairEngine:
         if role_label is None:
             return RepairOutcome(success=False, reason="missing_role_label")
 
-        trusted_email: str | None = None
-        if lookup_tool not in runtime.functions:
-            return RepairOutcome(success=False, reason="lookup_tool_unavailable")
         trusted_email = _lookup_contact_email(
             runtime,
             env,
@@ -71,7 +136,7 @@ class RepairEngine:
             role_label,
             tool_call,
             role_slot,
-            extra_args,
+            trusted_resolver,
         )
         if trusted_email is None:
             return RepairOutcome(success=False, reason="contact_not_found")
@@ -91,18 +156,34 @@ class RepairEngine:
             trusted_emails={trusted_email},
         )
 
+    def _can_trusted_account_lookup(
+        self,
+        tool_call: FunctionCall,
+        record: InterventionRecordModel,
+        env: TaskEnvironment,
+        repair_cfg: dict,
+        user_instruction: str,
+    ) -> bool:
+        role_slot = repair_cfg.get("role_slot", "recipient")
+        role_label = _role_label_for_slot(record, role_slot)
+        if role_label is None:
+            role_label = _role_from_user_instruction(user_instruction, repair_cfg.get("role_aliases", []))
+        if role_label is None:
+            return False
+        return _trusted_account_from_filesystem(env, role_label) is not None
+
     def _trusted_account_lookup(
         self,
         tool_call: FunctionCall,
         record: InterventionRecordModel,
         env: TaskEnvironment,
         repair_cfg: dict,
-        extra_args: dict | None = None,
+        user_instruction: str,
     ) -> RepairOutcome:
         role_slot = repair_cfg.get("role_slot", "recipient")
         role_label = _role_label_for_slot(record, role_slot)
         if role_label is None:
-            role_label = _role_from_user_query(extra_args, repair_cfg.get("role_aliases", []))
+            role_label = _role_from_user_instruction(user_instruction, repair_cfg.get("role_aliases", []))
         if role_label is None:
             return RepairOutcome(success=False, reason="missing_role_label")
 
@@ -134,21 +215,6 @@ def _format_slot_value(current_value: object, trusted_email: str) -> FunctionCal
     return trusted_email
 
 
-def _lookup_trusted_contact_from_extra(extra_args: dict | None, role_label: str) -> str | None:
-    if not extra_args:
-        return None
-    trusted_contacts = extra_args.get("safeconfirm", {}).get("trusted_contacts") or {}
-    if not isinstance(trusted_contacts, dict):
-        return None
-    normalized = role_label.lower()
-    if normalized in trusted_contacts:
-        return str(trusted_contacts[normalized])
-    for key, value in trusted_contacts.items():
-        if str(key).lower() == normalized:
-            return str(value)
-    return None
-
-
 def _lookup_contact_email(
     runtime: FunctionsRuntime,
     env: TaskEnvironment,
@@ -156,19 +222,20 @@ def _lookup_contact_email(
     role_label: str,
     tool_call: FunctionCall,
     role_slot: str,
-    extra_args: dict | None = None,
+    trusted_resolver: TrustedResolver,
 ) -> str | None:
-    trusted_from_extra = _lookup_trusted_contact_from_extra(extra_args, role_label)
-    if trusted_from_extra is not None:
-        excluded_values = _current_slot_values(tool_call, role_slot)
-        if trusted_from_extra.lower() not in excluded_values:
-            return trusted_from_extra
+    excluded_values = _current_slot_values(tool_call, role_slot)
+    resolved = trusted_resolver.resolve_email_for_role(role_label)
+    if resolved is not None and resolved.lower() not in excluded_values:
+        return resolved.lower()
+
+    if lookup_tool not in runtime.functions:
+        return None
 
     contacts, error = runtime.run_function(env, lookup_tool, {"query": role_label})
     if error or not isinstance(contacts, list) or not contacts:
         return None
 
-    excluded_values = _current_slot_values(tool_call, role_slot)
     for contact in contacts:
         if not isinstance(contact, EmailContact):
             continue
@@ -188,12 +255,12 @@ def _current_slot_values(tool_call: FunctionCall, role_slot: str) -> set[str]:
     return {str(current).lower()}
 
 
-def _role_from_user_query(extra_args: dict | None, role_aliases: list[str]) -> str | None:
-    if not extra_args or not role_aliases:
+def _role_from_user_instruction(user_instruction: str, role_aliases: list[str]) -> str | None:
+    if not user_instruction or not role_aliases:
         return None
-    query = str(extra_args.get("safeconfirm", {}).get("user_query", "")).lower()
+    lowered = user_instruction.lower()
     for alias in role_aliases:
-        if alias.lower() in query:
+        if alias.lower() in lowered:
             return alias.lower()
     return None
 

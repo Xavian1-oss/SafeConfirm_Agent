@@ -47,7 +47,6 @@ DEFENSES = [
     "repeat_user_prompt",
     "safeconfirm",
     "safeconfirm_log_only",
-    "safeconfirm_retrieval",
 ]
 """Available defenses."""
 
@@ -271,15 +270,12 @@ class AgentPipeline(BasePipelineElement):
             pipeline = cls([system_message_component, init_query_component, llm, tools_loop])
             pipeline.name = f"{llm_name}-{config.defense}"
             return pipeline
-        if config.defense in ("safeconfirm", "safeconfirm_log_only", "safeconfirm_retrieval"):
+        if config.defense in ("safeconfirm", "safeconfirm_log_only"):
             from safeconfirm.pipeline.intervention_element import SafeConfirmIntervention
 
             if config.defense == "safeconfirm_log_only":
                 mode = "log_only"
                 policy_backend = None
-            elif config.defense == "safeconfirm_retrieval":
-                mode = "active"
-                policy_backend = "retrieval"
             else:
                 mode = "active"
                 policy_backend = None

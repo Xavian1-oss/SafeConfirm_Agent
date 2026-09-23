@@ -25,7 +25,7 @@ def build_bridge_pipeline(
     enable_repair: bool | None = None,
     temperature: float | None = None,
 ) -> BasePipelineElement:
-    if defense not in ("safeconfirm", "safeconfirm_log_only", "safeconfirm_retrieval"):
+    if defense not in ("safeconfirm", "safeconfirm_log_only"):
         pipeline = AgentPipeline.from_config(
             PipelineConfig(
                 llm=model,
@@ -49,9 +49,6 @@ def build_bridge_pipeline(
     if defense == "safeconfirm_log_only":
         mode = "log_only"
         resolved_policy = None
-    elif defense == "safeconfirm_retrieval":
-        mode = "active"
-        resolved_policy = resolved_policy or "retrieval"
     else:
         mode = "active"
 

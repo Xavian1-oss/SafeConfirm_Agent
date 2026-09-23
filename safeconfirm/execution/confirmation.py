@@ -6,7 +6,6 @@ import yaml
 
 from safeconfirm.types.models import (
     ConfirmationPayloadModel,
-    ConfirmationResponseModel,
     InterventionRecordModel,
     InterventionType,
     SlotDisclosureModel,
@@ -119,39 +118,6 @@ def validate_disclosure(payload: ConfirmationPayloadModel) -> bool:
             if disclosure.source.value not in prompt_lower and "external" not in prompt_lower:
                 return False
     return True
-
-
-def is_confirmation_laundering(
-    payload: ConfirmationPayloadModel,
-    response: ConfirmationResponseModel,
-    record: InterventionRecordModel,
-) -> bool:
-    if response.outcome != "approved":
-        return False
-    gap_slots = [
-        slot_record
-        for slot_record in record.slot_records
-        if slot_record.slot.slot_class == "binding"
-        and slot_record.authorization_gap
-        and slot_record.slot.risk_weight >= RISK_GAP_THRESHOLD
-    ]
-    if not gap_slots:
-        return False
-    if payload.intervention == "VAGUE_CONFIRM":
-        return True
-    if payload.intervention == "SOURCE_AWARE_CONFIRM":
-        for slot_record in gap_slots:
-            if slot_record.slot.name not in payload.required_disclosures:
-                return True
-            if slot_record.slot.value_normalized not in payload.prompt_text.lower():
-                if str(slot_record.slot.value).lower() not in payload.prompt_text.lower():
-                    return True
-            if slot_record.source == SourceTrust.UNTRUSTED_OBSERVATION:
-                prompt_lower = payload.prompt_text.lower()
-                if "untrusted" not in prompt_lower and "external" not in prompt_lower:
-                    return True
-        return not payload.laundering_safe
-    return False
 
 
 def _display_name(slot_name: str) -> str:

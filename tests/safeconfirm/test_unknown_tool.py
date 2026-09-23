@@ -25,12 +25,3 @@ def test_unknown_tool_block_policy():
     assert record.selected_intervention == InterventionType.BLOCK.value
     assert record.executed is False
 
-
-def test_unknown_tool_allow_policy_legacy():
-    config = SafeConfirmConfig.load()
-    config.unknown_tool_policy = "allow"
-    pipeline = SafeConfirmPipeline(config)
-    call = FunctionCall(function="legacy_unregistered", args={"x": 1}, id="c3")
-    record = pipeline.analyze_tool_call(call, "query", [])
-    assert record.selected_intervention == InterventionType.ALLOW.value
-    assert record.executed is True

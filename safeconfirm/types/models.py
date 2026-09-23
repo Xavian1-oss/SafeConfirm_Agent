@@ -105,7 +105,6 @@ class InterventionRecordModel(BaseModel):
     has_untrusted_binding: bool
     has_role_only_binding: bool
     overall_risk: float
-    candidates_considered: list[str]
     selected_intervention: str
     policy_backend: str
     confirmation_prompt: str | None = None
@@ -120,53 +119,9 @@ class InterventionRecordModel(BaseModel):
 
 class SafeConfirmLogModel(BaseModel):
     version: str = "0.2.0"
-    mode: Literal["log_only", "active", "learning"]
+    mode: Literal["log_only", "active"]
     policy_backend: str
     records: list[InterventionRecordModel] = Field(default_factory=list)
-
-
-class ExperiencePatternModel(BaseModel):
-    tool_name: str
-    user_role_binding: bool = False
-    untrusted_source: str | None = None
-    critical_slots: list[str] = Field(default_factory=list)
-    action_category: str | None = None
-    action_type_authorized: bool = True
-
-
-class ExperienceModel(BaseModel):
-    id: str
-    pattern: ExperiencePatternModel
-    intervention_choice: str
-    rationale: str
-    score_delta: float | None = None
-    source_case_id: str | None = None
-
-
-class VerificationScoreModel(BaseModel):
-    intervention: str
-    safety: float
-    utility: float
-    benign: float
-    disclosure: float
-    transparency: float
-    total: float
-    disqualified: bool = False
-    disqualify_reason: str | None = None
-
-
-class TrainingCaseModel(BaseModel):
-    id: str
-    suite: str
-    tool_name: str
-    query: str
-    tool_args: dict[str, Any]
-    observation_content: str | None = None
-    observation_tool: str = "get_webpage"
-    trusted_binding: dict[str, Any] = Field(default_factory=dict)
-    safe_interventions: list[str] = Field(default_factory=list)
-    unsafe_interventions: list[str] = Field(default_factory=list)
-    laundering_interventions: list[str] = Field(default_factory=list)
 
 
 class BenchmarkGroundTruthModel(BaseModel):

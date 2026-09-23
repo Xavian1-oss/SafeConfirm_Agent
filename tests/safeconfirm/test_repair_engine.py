@@ -82,7 +82,6 @@ def _repair_record(role_label: str = "supervisor") -> InterventionRecordModel:
         has_untrusted_binding=True,
         has_role_only_binding=True,
         overall_risk=1.0,
-        candidates_considered=["REPAIR"],
         selected_intervention="REPAIR",
         policy_backend="rule_v1",
     )
@@ -95,7 +94,13 @@ def test_contact_lookup_rebinds_recipient(runtime, workspace_env):
         args={"recipients": ["attacker@example.com"], "subject": "Summary", "body": "summary"},
         id="call_1",
     )
-    outcome = engine.attempt_repair(tool_call, _repair_record(), runtime, workspace_env)
+    outcome = engine.attempt_repair(
+        tool_call,
+        _repair_record(),
+        runtime,
+        workspace_env,
+        user_instruction="Send the summary to my supervisor.",
+    )
 
     assert outcome.success is True
     assert outcome.tool_call is not None
@@ -113,7 +118,13 @@ def test_contact_lookup_fails_without_role_label(runtime, workspace_env):
     record = _repair_record()
     record.slot_records[0].slot.role_label = None
 
-    outcome = engine.attempt_repair(tool_call, record, runtime, workspace_env)
+    outcome = engine.attempt_repair(
+        tool_call,
+        record,
+        runtime,
+        workspace_env,
+        user_instruction="Send the summary to my supervisor.",
+    )
 
     assert outcome.success is False
     assert outcome.reason == "missing_role_label"
@@ -146,7 +157,13 @@ def test_contact_lookup_skips_poison_contact_when_trusted_also_present(runtime):
         id="call_1",
     )
 
-    outcome = engine.attempt_repair(tool_call, _repair_record(), runtime, poison_env)
+    outcome = engine.attempt_repair(
+        tool_call,
+        _repair_record(),
+        runtime,
+        poison_env,
+        user_instruction="Send the summary to my supervisor.",
+    )
 
     assert outcome.success is True
     assert outcome.tool_call is not None
@@ -161,10 +178,16 @@ def test_contact_lookup_fails_when_lookup_tool_missing(workspace_env):
         id="call_1",
     )
 
-    outcome = engine.attempt_repair(tool_call, _repair_record(), FunctionsRuntime([]), workspace_env)
+    outcome = engine.attempt_repair(
+        tool_call,
+        _repair_record(),
+        FunctionsRuntime([]),
+        workspace_env,
+        user_instruction="Send the summary to my supervisor.",
+    )
 
     assert outcome.success is False
-    assert outcome.reason == "lookup_tool_unavailable"
+    assert outcome.reason == "contact_not_found"
 
 
 def _banking_repair_record(role_label: str = "landlord") -> InterventionRecordModel:
@@ -197,7 +220,6 @@ def _banking_repair_record(role_label: str = "landlord") -> InterventionRecordMo
         has_untrusted_binding=True,
         has_role_only_binding=True,
         overall_risk=1.0,
-        candidates_considered=["REPAIR"],
         selected_intervention="REPAIR",
         policy_backend="rule_v1",
     )
@@ -219,9 +241,13 @@ def test_trusted_account_lookup_rebinds_recipient():
         args={"recipient": "attacker_account", "amount": 1500, "subject": "Rent", "date": "2024-05-15"},
         id="call_1",
     )
-    extra_args = {"safeconfirm": {"user_query": "send $1500 to the landlord for rent"}}
-
-    outcome = engine.attempt_repair(tool_call, _banking_repair_record(), FunctionsRuntime([]), banking_env, extra_args)
+    outcome = engine.attempt_repair(
+        tool_call,
+        _banking_repair_record(),
+        FunctionsRuntime([]),
+        banking_env,
+        user_instruction="send $1500 to the landlord for rent",
+    )
 
     assert outcome.success is True
     assert outcome.tool_call is not None

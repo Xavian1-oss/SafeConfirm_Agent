@@ -123,7 +123,6 @@ SafeConfirm（Source-Aware Intervention）是面向工具型 LLM Agent 的**来�
 - AgentDojo 集成（workspace、banking）
 - 规则策略 + SOURCE_AWARE 确认 + REPAIR
 - **E2E benchmark**（`benchmark_cases_e2e.yaml`）及 Bridge 指标（TSR/ASR + 干预指标）
-- Training-free group-relative intervention learning（S4，可选 `--defense safeconfirm_retrieval`）
 - 模拟确认器：**LLMUserConfirmer**（E2E 主路径）；**StrictOracleConfirmer**（ablation / 上界对照）
 
 ### 5.2 Out of Scope（当前版本）
@@ -246,12 +245,11 @@ VCR = |{records in G : selected_intervention == VAGUE_CONFIRM}| / |G|
 | **Banking** | `-s safeconfirm_banking` + SafeConfirm | 泛化（n=4） | `e2e_banking_deepseek_v4/` |
 | **Vague baseline** | `--policy baseline_vague` | H1 对照 | `confirm_ablation_v4/vague_*` |
 | **REPAIR ablation** | `--no-repair` | H2 对照 | `ablation_repair_v2/`, `ablation_repair_subset_v1/` |
-| **Retrieval** | `--defense safeconfirm_retrieval` | H3 E2E | `e2e_retrieval_deepseek/` |
 | **Defense sweep** | AgentDojo defenses + log-only | Table 4 | `e2e_ds_v2_*/` |
 | **Confirmer ablation** | `llm_user` vs `oracle_strict` | 披露 × 用户 | `confirm_ablation_v4/` |
 | **组件 ablation** | `baseline_allow` / `baseline_block` vs `rule_v1` | C2 Pareto | `component_ablation/` — **☑** |
 | **Multi-seed** | `--run-id s{0,1,2}` | 结果稳定性 | `e2e_deepseek_v4_s*/`, `confirm_ablation_v4/` — **☑** |
-| **L0 passive** | `--defense safeconfirm_log_only` on native workspace | 部署兼容性 | `runs/l0/goal_c_v1_ds_full/` — **☑ 0pp** |
+| **L0 passive** | `--defense safeconfirm_log_only` on native workspace | 部署兼容性 | `run_native_generalization.sh` |
 
 Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 
@@ -260,7 +258,6 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 | `rule_v1` | gap → SOURCE_AWARE（+ REPAIR 若 role-only） |
 | `baseline_vague` | gap → VAGUE_CONFIRM |
 | `baseline_allow` / `baseline_block` | 消融用 |
-| `retrieval` | S4 经验检索策略 |
 
 ### 7.5 研究假设与证据状态
 
@@ -268,7 +265,6 @@ Policy preset（`--policy` / `SAFECONFIRM_POLICY`）：
 |------|------|------|------|
 | **H1** | SOURCE_AWARE 在相近 TSR 下 SDR/CLR 显著优于 VAGUE | ✅ `confirm_ablation_v4` 3 seeds | — |
 | **H2** | REPAIR 提升 TSR 且不升高 UAR | ✅ `ablation_repair_v2` + subset | — |
-| **H3** | Retrieval 优于 rule_v1 | ◐ E2E 无增益 | Limitations |
 | **H4** | 仅靠 ASR 无法区分干预质量 | ✅ ablation + defense sweep | — |
 | **C1** | Confirmation laundering 真实存在 | ✅ vague_llm CLR 100% | — |
 | **C2** | Minimal-disruption intervention | ✅ allow/block/SC Pareto | — |

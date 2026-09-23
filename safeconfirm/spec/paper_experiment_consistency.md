@@ -47,7 +47,7 @@ Appendix: tab:prov-flip = synthetic label-flip batch (do not compare TSR to Tabl
 | 论文行 | TSR | ASR | SDR | CLR | Canonical JSON | 脚本 / 批次 |
 |--------|-----|-----|-----|-----|----------------|-------------|
 | Source-aware disclosure | 55.6 | 0 | 100 | 0 | `confirm_sa_llm_poison_v2.json` | `run_confirm_ablation.sh` (v0.4.2) |
-| Vague disclosure | 22.2 | 0 | 0 | 0 | `confirm_vague_llm_poison_v2.json` | 同上 |
+| Vague disclosure | 22.2 | 0 | 0 | — | `confirm_vague_llm_poison_v2.json` | 同上（无 approval → `clr_mean: null`） |
 | Vague + compliant | 22.2 | 6.7 | 0 | 66.7 | `confirm_vague_compliant_llm.json` | `CONFIRMER=compliant_llm` |
 | SafeConfirm rule_v1 (provenance block) | **75.0** | 0 | 100 | 0 | `provenance_rule_v1_aggregate.json` | `run_provenance_baselines.sh`, `evidence_20260916_1531` |
 | Provenance-block | 22.2 | 0 | — | — | `provenance_block_aggregate.json` | 同上 |

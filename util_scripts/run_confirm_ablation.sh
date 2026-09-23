@@ -3,6 +3,8 @@
 # Env:
 #   SEEDS="s0 s1 s2"   multi-seed LLM rows (oracle stays single-run)
 #   LOGROOT=...        output root (default runs/bridge/confirm_ablation_v4)
+# Paper Table 1 RQ1 (SA/vague): LOGROOT=runs/bridge/confirm_ablation_poison_v2_20260910 SEEDS="s0 s1 s2"
+# Paper compliant row: LOGROOT=runs/bridge/confirm_ablation_v4 COMPLIANT_VAGUE=1 SEEDS="s0 s1 s2"
 #   SUBSET=12|16
 set -euo pipefail
 cd "$(dirname "$0")/.."

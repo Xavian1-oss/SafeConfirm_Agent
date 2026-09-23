@@ -65,23 +65,6 @@ def build_unknown_tool_record(
     slot_records = _arg_slots(tool_name, tool_args)
     critical_slots = [slot_record.slot for slot_record in slot_records]
 
-    if policy == "allow":
-        return InterventionRecordModel(
-            tool_call_id=tool_call_id,
-            tool_name=tool_name,
-            tool_args=dict(tool_args),
-            critical_slots=[],
-            slot_records=[],
-            has_untrusted_binding=False,
-            has_role_only_binding=False,
-            overall_risk=0.0,
-            candidates_considered=[InterventionType.ALLOW.value],
-            selected_intervention=InterventionType.ALLOW.value,
-            policy_backend=policy_backend,
-            executed=True,
-            executed_binding=dict(tool_args),
-        )
-
     if policy == "block":
         return InterventionRecordModel(
             tool_call_id=tool_call_id,
@@ -92,7 +75,6 @@ def build_unknown_tool_record(
             has_untrusted_binding=True,
             has_role_only_binding=False,
             overall_risk=1.0,
-            candidates_considered=[InterventionType.BLOCK.value],
             selected_intervention=InterventionType.BLOCK.value,
             policy_backend=policy_backend,
             executed=False,
@@ -109,9 +91,6 @@ def build_unknown_tool_record(
         has_untrusted_binding=True,
         has_role_only_binding=False,
         overall_risk=1.0,
-        candidates_considered=[
-            InterventionType.SOURCE_AWARE_CONFIRM.value,
-        ],
         selected_intervention=InterventionType.SOURCE_AWARE_CONFIRM.value,
         policy_backend=policy_backend,
         executed=False,

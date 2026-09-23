@@ -7,6 +7,8 @@ from agentdojo.agent_pipeline.base_pipeline_element import BasePipelineElement
 from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.logging import Logger
 from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlock, text_content_block_from_string
+from safeconfirm.benchmark.agentdojo_adapter import task_context_from_extra_args
+from safeconfirm.context.repair_preflight import RepairPreflight
 from safeconfirm.config.loader import SafeConfirmConfig
 from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.intervention_executor import InterventionExecutor
@@ -62,7 +64,13 @@ class SafeConfirmIntervention(BasePipelineElement):
             return query, runtime, env, messages, extra_args
 
         state = get_or_init_safeconfirm_state(extra_args, self.config)
-        records = [self.pipeline.analyze_tool_call(tool_call, query, list(messages)) for tool_call in tool_calls]
+        state["user_query"] = query
+        task_context = task_context_from_extra_args(query, list(messages), extra_args)
+        preflight = RepairPreflight(runtime=runtime, env=env)
+        records = [
+            self.pipeline.analyze_tool_call(tool_call, task_context, repair_preflight=preflight)
+            for tool_call in tool_calls
+        ]
 
         if self.config.mode == "log_only":
             state["intervention_log"].extend(records)
@@ -70,7 +78,7 @@ class SafeConfirmIntervention(BasePipelineElement):
             return query, runtime, env, messages, extra_args
 
         outcome = self.executor.apply(
-            query,
+            task_context,
             runtime,
             env,
             list(messages),
