@@ -39,7 +39,10 @@ Shared: `benchmark_subsets.sh`, `aggregate_seed_metrics.py`
 | `run_component_ablation.sh` | Allow/block/rule_v1 (allow 19.4% row) |
 | `run_repair_ablation.sh`, `run_repair_subset_ablation.sh` | Appendix repair |
 | `run_ds_defense_sweep_v2.sh` | Prompt defenses appendix |
-| `run_native_generalization.sh` | Native AgentDojo smoke |
+| `run_native_pilot.sh` | Small native smoke (1×user_task_0, 2 injections, 4 defenses) |
+| `run_native_evaluation.sh` | Native AgentDojo matrix (P0/Block/Vague/SC) + coverage report |
+| `aggregate_native_evaluation.py` | Aggregate existing native logdirs → `native_comparison.json` |
+| `run_native_generalization.sh` | Legacy smoke (10 tasks); prefer `run_native_evaluation.sh` |
 | `run_banking_benign_check.sh` | Banking benign diagnostic |
 | `run_paired_security_rerun.sh` | 16-case paired (per-case appendix) |
 

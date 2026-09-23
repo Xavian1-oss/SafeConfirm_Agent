@@ -37,7 +37,7 @@ class SafeConfirmConfig:
             enable_repair=_env_bool("SAFECONFIRM_ENABLE_REPAIR", raw["enable_repair"]),
             registry_path=registry,
             templates_path=templates,
-            simulated_confirmer=raw["simulated_confirmer"],
+            simulated_confirmer=os.getenv("SAFECONFIRM_CONFIRMER", raw["simulated_confirmer"]),
             unknown_tool_policy=os.getenv(
                 "SAFECONFIRM_UNKNOWN_TOOL_POLICY",
                 raw.get("unknown_tool_policy", "conservative_confirm"),
