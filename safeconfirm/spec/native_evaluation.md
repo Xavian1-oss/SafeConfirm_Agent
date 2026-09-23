@@ -6,7 +6,7 @@
 |-------|--------|
 | **Protocol ID** | `native-eval-v1` |
 | **Eligibility ID** | `native-eligibility-v1` (immutable after formal run starts; change only on `native-eligibility-v2` + new protocol) |
-| **Git tag** | `native-eval-v1` → `99c9b3e67` (full: `99c9b3e679…`; code body: `c9b3eecc8`) |
+| **Implementation commit** | git tag **`native-eval-v1`** (check out this tag for frozen code; do not change eligibility after formal v1 run starts) |
 | **Formal run batch** | `formal_v1_<commit>` under `runs/native_eval/` |
 | **Multi-seed** | Not in v1; single formal run only |
 
