@@ -3,16 +3,23 @@ from safeconfirm.authorization.state import AuthorizationState
 from safeconfirm.types.models import InterventionType
 
 
-def _state(**kwargs: object) -> AuthorizationState:
-    defaults = dict(
-        action_authorized=True,
-        binding_authorized=True,
-        has_untrusted_binding=False,
-        has_role_only_binding=False,
-        overall_risk=0.0,
+def _state(
+    *,
+    action_authorized: bool = True,
+    binding_authorized: bool = True,
+    has_untrusted_binding: bool = False,
+    has_role_only_binding: bool = False,
+    repair_resolvable: bool = False,
+    overall_risk: float = 0.0,
+) -> AuthorizationState:
+    return AuthorizationState(
+        action_authorized=action_authorized,
+        binding_authorized=binding_authorized,
+        has_untrusted_binding=has_untrusted_binding,
+        has_role_only_binding=has_role_only_binding,
+        repair_resolvable=repair_resolvable,
+        overall_risk=overall_risk,
     )
-    defaults.update(kwargs)
-    return AuthorizationState(**defaults)  # type: ignore[arg-type]
 
 
 def test_policy_allow_when_no_untrusted_low_risk():
