@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from agentdojo.types import ChatMessage
 from safeconfirm.analysis.trust_index import collect_role_aliases
+from safeconfirm.authorization.action_auth import DEFAULT_ACTION_AUTH_PROVIDER, ActionAuthorizationProvider
 from safeconfirm.extraction.registry_loader import ToolRegistryEntry, ToolSlotRegistry
 from safeconfirm.extraction.slot_extractor import get_tool_entry
-from safeconfirm.authorization.action_auth import DEFAULT_ACTION_AUTH_PROVIDER, ActionAuthorizationProvider
 from safeconfirm.provenance.provider import DEFAULT_PROVENANCE_PROVIDER, ProvenanceProvider
 from safeconfirm.types.models import (
     SlotExtractionResultModel,

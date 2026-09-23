@@ -8,8 +8,8 @@ from agentdojo.functions_runtime import EmptyEnv, Env, FunctionsRuntime
 from agentdojo.logging import Logger
 from agentdojo.types import ChatAssistantMessage, ChatMessage, MessageContentBlock, text_content_block_from_string
 from safeconfirm.benchmark.agentdojo_adapter import task_context_from_extra_args
-from safeconfirm.context.repair_preflight import RepairPreflight
 from safeconfirm.config.loader import SafeConfirmConfig
+from safeconfirm.context.repair_preflight import RepairPreflight
 from safeconfirm.execution.confirmer import get_confirmer
 from safeconfirm.execution.intervention_executor import InterventionExecutor
 from safeconfirm.pipeline.orchestrator import (

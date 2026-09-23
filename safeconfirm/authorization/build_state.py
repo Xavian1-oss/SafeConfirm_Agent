@@ -3,7 +3,6 @@ from __future__ import annotations
 from safeconfirm.analysis.source_analyzer import has_binding_authorization_gap
 from safeconfirm.authorization.state import AuthorizationState
 from safeconfirm.extraction.registry_loader import ToolSlotRegistry
-from safeconfirm.extraction.slot_extractor import get_tool_entry
 from safeconfirm.types.models import SourceAnalysisResultModel
 
 

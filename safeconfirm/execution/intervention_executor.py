@@ -79,7 +79,6 @@ class InterventionExecutor:
         extra_args: dict,
         pipeline: SafeConfirmPipeline,
     ) -> InterventionOutcome:
-        query = task_context.user_instruction
         if any(record.selected_intervention == InterventionType.BLOCK.value for record in records):
             return self._block_all(
                 messages, records, "SafeConfirm blocked one or more tool calls due to authorization risk."
